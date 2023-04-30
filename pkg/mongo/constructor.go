@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,9 +21,39 @@ var (
 	MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT)
 )
 
-var instance *mongo.Client
+type DB struct {
+	mongo.Client
+}
+
 
 func init() {
+	
+	if _, exist := os.LookupEnv("MONGO_HOST"); !exist {
+		log.Fatalf("error: %s enveironment variable required", "MONGO_HOST")
+	}
+
+	if _, exist := os.LookupEnv("MONGO_PORT"); !exist {
+		log.Fatalf("error: %s enveironment variable required", "MONGO_PORT")
+	}
+
+	if _, exist := os.LookupEnv("MONGO_PASS"); !exist {
+		log.Fatalf("error: %s enveironment variable required", "MONGO_USER")
+	}
+
+	if _, exist := os.LookupEnv("MONGO_HOST"); !exist {
+		log.Fatalf("error: %s enveironment variable required", "MONGO_HOST")
+	}
+
+	if _, exist := os.LookupEnv("MONGO_DATABASE"); !exist {
+		log.Fatalf("error: %s enveironment variable required", "MONGO_DATABASE")
+	}
+
+}
+
+
+
+func NewDB() *DB {
+
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI(MONGO_URI).SetServerAPIOptions(serverAPI)
 
@@ -32,20 +63,8 @@ func init() {
 		panic(err)
 	}
 
-	instance = client
-}
-
-
-
-func NewInstance() *mongo.Client {
-	return instance
-}
-
-func Close() error {
-
-	if err := instance.Disconnect(context.TODO()); err != nil {
-		return err
+	return &DB{
+		Client: *client,
 	}
-
-	return nil
 }
+

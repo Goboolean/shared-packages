@@ -6,12 +6,12 @@ import (
 )
 
 type Queries struct {
-	client *mongo.Client
+	client *DB
 	tx *mongo.Session
 }
 
 func New() *Queries {
-	return &Queries{client: NewInstance()}
+	return &Queries{client: NewDB()}
 }
 
 
