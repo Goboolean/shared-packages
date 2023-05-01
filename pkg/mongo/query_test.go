@@ -3,7 +3,7 @@ package mongo_test
 import (
 	"context"
 	"os"
-	"shared-packages/pkg/mongo"
+	"github.com/Goboolean/shared-packages/pkg/mongo"
 	"testing"
 )
 
