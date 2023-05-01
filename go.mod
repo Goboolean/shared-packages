@@ -1,4 +1,4 @@
-module shared-packages
+module github.com/Goboolean/shared-packages
 
 go 1.18
 
