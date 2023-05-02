@@ -3,12 +3,11 @@ version: "2"
 services:
   kafka:
     image: docker.io/bitnami/kafka:3.4
+    container_name: kafka
     ports:
       - "19092:19092"
     volumes:
       - "kafka_data:/bitnami"
-    #command:
-      #- --config-file=./kafka.yml
     environment:
       - "ALLOW_PLAINTEXT_LISTENER=yes"
       - "KAFKA_INTER_BROKER_USER=goboolean"
