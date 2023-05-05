@@ -53,18 +53,17 @@ func NewSubscriber(c *pkg.Config, lis SubscribeListener) *Subscriber {
 
 	go func(ch chan struct{}) {
 		for {
-			msg, err := consumer.ReadMessage(-1)
-
 			select {
 			case <-ch:
 				return
 			default:
-				
+
 			}
+
+			msg, err := consumer.ReadMessage(-1)
 
 			if err != nil {
 				log.Fatalf("err: failed to read received message: %v", err)
-				return
 
 			} else {
 				var data StockAggregate
