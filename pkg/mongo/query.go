@@ -10,15 +10,15 @@ type Queries struct {
 	tx *mongo.Session
 }
 
-func New() *Queries {
-	return &Queries{client: NewDB()}
+func New(db *DB) *Queries {
+	return &Queries{client: db}
 }
 
 
 
 func (q *Queries) InsertStockBatch(tx Transaction, stock string, batch []StockAggregate) error {
 
-	coll := q.client.Database(MONGO_DATABASE).Collection(stock)
+	coll := q.client.Database(q.client.DefaultDatabase).Collection(stock)
 	session := tx.Transaction().(mongo.Session)
 
 	docs := make([]interface{}, len(batch))
@@ -38,7 +38,7 @@ func (q *Queries) InsertStockBatch(tx Transaction, stock string, batch []StockAg
 
 func (q *Queries) FetchAllStockBatch(tx Transaction, stock string, stockChan chan StockAggregate) error {
 
-	coll := q.client.Database(MONGO_DATABASE).Collection(stock)
+	coll := q.client.Database(q.client.DefaultDatabase).Collection(stock)
 	session := tx.Transaction().(mongo.Session)
 
 	_, err := session.WithTransaction(tx.Context(), func(ctx mongo.SessionContext) (interface{}, error) {
