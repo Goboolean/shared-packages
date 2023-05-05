@@ -3,8 +3,10 @@ package mongo_test
 import (
 	"context"
 	"os"
-	"github.com/Goboolean/shared-packages/pkg/mongo"
 	"testing"
+
+	"github.com/Goboolean/shared-packages/pkg"
+	"github.com/Goboolean/shared-packages/pkg/mongo"
 )
 
 var (
@@ -24,8 +26,14 @@ var (
 var testStockName string = ""
 
 func TestMain(m *testing.M) {
-	instance = mongo.NewDB()
-	queries = mongo.New()
+	c := pkg.Config{
+		Host:     os.Getenv("MONGO_HOST"),
+		Port:     os.Getenv("MONGO_PORT"),
+		Password: os.Getenv("MONGO_PASS"),
+		Database: os.Getenv("MONGO_DATABASE"),
+	}
+	instance = mongo.NewDB(&c)
+	queries = mongo.New(instance)
 
 	code := m.Run()
 

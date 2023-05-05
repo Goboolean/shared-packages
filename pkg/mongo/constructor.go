@@ -3,59 +3,44 @@ package mongo
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
 
+	"github.com/Goboolean/shared-packages/pkg"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-
-var (
-	MONGO_HOST     = os.Getenv("MONGO_HOST")
-	MONGO_PORT     = os.Getenv("MONGO_PORT")
-	MONGO_USER     = os.Getenv("MONGO_USER")
-	MONGO_PASS     = os.Getenv("MONGO_PASS")
-	MONGO_DATABASE = os.Getenv("MONGO_DATABASE")
-	MONGO_URI = fmt.Sprintf("mongodb://%s:%s@%s:%s/?maxPoolSize=20&w=majority",
-	MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT)
-)
-
 type DB struct {
 	mongo.Client
+	DefaultDatabase string
 }
 
+func NewDB(c *pkg.Config) *DB {
 
-func init() {
-	
-	if _, exist := os.LookupEnv("MONGO_HOST"); !exist {
-		log.Fatalf("error: %s enveironment variable required", "MONGO_HOST")
+	if err := c.ShouldUserExist(); err != nil {
+		panic(err)
 	}
 
-	if _, exist := os.LookupEnv("MONGO_PORT"); !exist {
-		log.Fatalf("error: %s enveironment variable required", "MONGO_PORT")
+	if err := c.ShouldPWExist(); err != nil {
+		panic(err)
 	}
 
-	if _, exist := os.LookupEnv("MONGO_PASS"); !exist {
-		log.Fatalf("error: %s enveironment variable required", "MONGO_USER")
+	if err := c.ShouldHostExist(); err != nil {
+		panic(err)
 	}
 
-	if _, exist := os.LookupEnv("MONGO_HOST"); !exist {
-		log.Fatalf("error: %s enveironment variable required", "MONGO_HOST")
+	if err := c.ShouldPortExist(); err != nil {
+		panic(err)
 	}
 
-	if _, exist := os.LookupEnv("MONGO_DATABASE"); !exist {
-		log.Fatalf("error: %s enveironment variable required", "MONGO_DATABASE")
+	if err := c.ShouldDBExist(); err != nil {
+		panic(err)
 	}
 
-}
-
-
-
-func NewDB() *DB {
+	mongoURI := fmt.Sprintf("mongodb://%s:%s@%s:%s/?maxPoolSize=20&w=majority",
+		c.User, c.Password, c.Host, c.Port)
 
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI(MONGO_URI).SetServerAPIOptions(serverAPI)
+	opts := options.Client().ApplyURI(mongoURI).SetServerAPIOptions(serverAPI)
 
 	client, err := mongo.Connect(context.TODO(), opts)
 
@@ -64,7 +49,7 @@ func NewDB() *DB {
 	}
 
 	return &DB{
-		Client: *client,
+		Client:          *client,
+		DefaultDatabase: c.Database,
 	}
 }
-

@@ -1,8 +1,10 @@
 package broker
 
 import (
+	"fmt"
 	"log"
 
+	"github.com/Goboolean/shared-packages/pkg"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
@@ -12,12 +14,21 @@ type Publisher struct {
 
 /*"security.protocol": "SASL_SSL",*/
 
-func NewPublisher() *Publisher {
+func NewPublisher(c *pkg.Config) *Publisher {
+
+	if err := c.ShouldHostExist(); err != nil {
+		panic(err)
+	}
+
+	if err := c.ShouldPortExist(); err != nil {
+		panic(err)
+	}
+
+	c.Address = fmt.Sprintf("%s:%s", c.Host, c.Port)
+
 	config := &kafka.ConfigMap{
-		"bootstrap.servers": KAFKA_ADDR,
+		"bootstrap.servers": c.Address,
 		"sasl.mechanism":    "PLAIN",
-		"sasl.username":     KAFKA_USER,
-		"sasl.password":     KAFKA_PASS,
 	}
 
 	producer, err := kafka.NewProducer(config)
