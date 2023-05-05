@@ -1,25 +1,25 @@
 package broker_test
 
 import (
+	"os"
 	"testing"
 
+	"github.com/Goboolean/shared-packages/pkg"
 	"github.com/Goboolean/shared-packages/pkg/broker"
 )
 
 var (
 	topic = "topic_test"
-	send = &broker.StockAggregate{}
+	data = &broker.StockAggregate{}
 )
 
 
 func TestPublisher(t *testing.T) {
-	pub := broker.NewPublisher()
 
-	if pub == nil {
-		t.Errorf("NewPublisher() failed: see log.Fatal")
-	}
-
-	data := &broker.StockAggregate{}
+	pub := broker.NewPublisher(&pkg.Config{
+		Host: os.Getenv("KAFKA_HOST"),
+		Port: os.Getenv("KAFKA_PORT"),
+	})
 
 	if err := pub.SendData(topic, data); err != nil {
 		t.Errorf("NewPublisher() failed: %v", err)
