@@ -71,9 +71,10 @@ func NewSubscriber(c *pkg.Config, lis SubscribeListener) *Subscriber {
 				if err := proto.Unmarshal(msg.Value, &data); err != nil {
 					log.Fatalf("err: failed to deserialize message: %v", err)
 				}
-				topic := msg.TopicPartition.Topic
 
-				lis.OnReceiveMessage(*topic, &data)
+				topic := unpackTopic(*msg.TopicPartition.Topic)
+
+				lis.OnReceiveMessage(topic, &data)
 			}
 		}
 	}(flagClosed)
