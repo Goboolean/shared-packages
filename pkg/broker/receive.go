@@ -3,5 +3,5 @@ package broker
 
 
 type SubscribeListener interface {
-	OnReceiveMessage(stock *StockAggregate) error
+	OnReceiveMessage(name string, stock *StockAggregate)
 }

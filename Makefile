@@ -1,9 +1,16 @@
-proto-generate:
+proto-stock-generate:
+	protoc \
+		-I api/proto \
+		--go_out=pkg/broker \
+		--go_opt=paths=source_relative \
+		stockaggs.proto
+
+proto-event-generate:
 	protoc \
 		-I api/proto \
 		--go_out=pkg/kafka \
 		--go_opt=paths=source_relative \
-		stockaggs.proto
+		event.proto
 
 build-kafka:
 	docker compose -f ./build/kafka/docker-compose.yml up --build -d
