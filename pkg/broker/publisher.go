@@ -29,6 +29,7 @@ func NewPublisher(c *pkg.Config) *Publisher {
 	config := &kafka.ConfigMap{
 		"bootstrap.servers": c.Address,
 		"sasl.mechanism":    "PLAIN",
+		"security.protocol": "SASL_PLAINTEXT",
 	}
 
 	producer, err := kafka.NewProducer(config)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/Goboolean/shared-packages/pkg"
 	"github.com/Goboolean/shared-packages/pkg/mongo"
+	"github.com/joho/godotenv"
 )
 
 var (
@@ -25,7 +26,18 @@ var (
 
 var testStockName string = ""
 
+
+
 func TestMain(m *testing.M) {
+
+	if err := os.Chdir("../../"); err != nil {
+		panic(err)
+	}
+
+	if err := godotenv.Load(); err != nil {
+		panic(err)
+	}
+
 	c := pkg.Config{
 		Host:     os.Getenv("MONGO_HOST"),
 		Port:     os.Getenv("MONGO_PORT"),
