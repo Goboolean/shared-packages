@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Goboolean/shared-packages/pkg"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -14,7 +14,7 @@ type DB struct {
 	DefaultDatabase string
 }
 
-func NewDB(c *pkg.Config) *DB {
+func NewDB(c *resolver.Config) *DB {
 
 	if err := c.ShouldUserExist(); err != nil {
 		panic(err)

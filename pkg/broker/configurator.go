@@ -3,20 +3,17 @@ package broker
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
-type Publisher struct {
-	*kafka.Producer
+type Configurator struct {
+	AdminClient *kafka.AdminClient
 }
 
-
-
-func NewPublisher(c *resolver.Config) *Publisher {
+func NewConfigurator(c *resolver.Config) *Configurator {
 
 	if err := c.ShouldHostExist(); err != nil {
 		panic(err)
@@ -32,13 +29,13 @@ func NewPublisher(c *resolver.Config) *Publisher {
 		"bootstrap.servers": c.Address,
 	}
 
-	producer, err := kafka.NewProducer(config)
+	admin, err := kafka.NewAdminClient(config)
+
 	if err != nil {
-		log.Fatalf("failed to create new kafka producer: %v", err)
-		return nil
+		panic(err)
 	}
 
-	instance := &Publisher{Producer: producer}
+	instance := &Configurator{AdminClient: admin}
 
 	ctx, cancelFunc := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancelFunc()
@@ -50,16 +47,11 @@ func NewPublisher(c *resolver.Config) *Publisher {
 	return instance
 }
 
-
-
-func (p *Publisher) Close() error {
-	p.Producer.Close()
-	return nil
+func (c *Configurator) Close() error {
+	return c.Close()
 }
 
-
-
-func (p *Publisher) Ping(ctx context.Context) error {
+func (c *Configurator) Ping(ctx context.Context) error {
 	deadline, ok := ctx.Deadline()
 
 	if !ok {
@@ -71,8 +63,6 @@ func (p *Publisher) Ping(ctx context.Context) error {
 		return fmt.Errorf("timeout")
 	}
 
-	metaData, err := p.Producer.GetMetadata(nil, true, int(remaining.Milliseconds()))
-
-	fmt.Println(metaData.OriginatingBroker.Host, metaData.OriginatingBroker.Port, metaData.OriginatingBroker.ID)
+	_, err := c.AdminClient.GetMetadata(nil, true, int(remaining.Milliseconds()))
 	return err
 }

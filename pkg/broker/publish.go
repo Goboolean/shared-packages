@@ -1,8 +1,7 @@
 package broker
 
 import (
-	"errors"
-	"time"
+	"fmt"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,11 +16,15 @@ func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 		return err
 	}
 
-	if err := p.producer.Produce(&kafka.Message{
+	if err := p.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 		Value:          bsonData,
 	}, nil); err != nil {
 		return err
+	}
+
+	if remain := p.Flush(int(defaultTimeout.Milliseconds())); remain != 0 {
+		return fmt.Errorf("%d events is stil remaining: ", remain)
 	}
 
 	return nil
@@ -29,7 +32,7 @@ func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 
 func (p *Publisher) SendDataBatch(topic string, batch []StockAggregate) error {
 
-	msgChan := p.producer.ProduceChannel()
+	msgChan := p.ProduceChannel()
 
 	bsonBatch := make([][]byte, len(batch))
 
@@ -52,8 +55,8 @@ func (p *Publisher) SendDataBatch(topic string, batch []StockAggregate) error {
 		}
 	}
 
-	if e := p.producer.Flush(int(time.Minute)); e != 0 {
-		return errors.New("failed some flush")
+	if remain := p.Flush(int(defaultTimeout.Milliseconds())); remain != 0 {
+		return fmt.Errorf("%d events is stil remaining: ", remain)
 	}
 
 	return nil
