@@ -4,4 +4,4 @@ import "time"
 
 
 
-var defaultTimeout = time.Second * 3 
+var defaultTimeout = time.Second * 3
