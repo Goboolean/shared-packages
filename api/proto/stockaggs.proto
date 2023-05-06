@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "github.com/Goboolean/shared-packages/pkg/kafka";
+
+message StockAggregate {
+  string event_type = 1;
+  float average     = 2;
+  float min         = 3;
+  float max         = 4;
+  float start       = 5;
+  float end         = 6;
+  int64 start_time  = 7;
+  int64 end_time    = 8;
+}

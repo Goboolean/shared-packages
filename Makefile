@@ -1,0 +1,14 @@
+proto-generate:
+	protoc \
+		-I api/proto \
+		--go_out=pkg/kafka \
+		--go_opt=paths=source_relative \
+		stockaggs.proto
+
+build-kafka:
+	docker compose -f ./build/kafka/docker-compose.yml up --build -d
+clean-kafka:
+	docker compose -f ./build/kafka/docker-compose.yml down
+
+sqlc-generate:
+	sqlc generate -f api/sql/sqlc.yml
