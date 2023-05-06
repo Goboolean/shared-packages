@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Goboolean/shared-packages/pkg"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
@@ -14,7 +14,7 @@ type Publisher struct {
 
 /*"security.protocol": "SASL_SSL",*/
 
-func NewPublisher(c *pkg.Config) *Publisher {
+func NewPublisher(c *resolver.Config) *Publisher {
 
 	if err := c.ShouldHostExist(); err != nil {
 		panic(err)
@@ -28,8 +28,8 @@ func NewPublisher(c *pkg.Config) *Publisher {
 
 	config := &kafka.ConfigMap{
 		"bootstrap.servers": c.Address,
-		"sasl.mechanism":    "PLAIN",
-		"security.protocol": "SASL_PLAINTEXT",
+		//"sasl.mechanism":    "PLAIN",
+		//"security.protocol": "SASL_PLAINTEXT",
 	}
 
 	producer, err := kafka.NewProducer(config)

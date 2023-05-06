@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Goboolean/shared-packages/pkg"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
@@ -23,7 +23,7 @@ type Subscriber struct {
 
 
 
-func NewSubscriber(c *pkg.Config, lis SubscribeListener) *Subscriber {
+func NewSubscriber(c *resolver.Config, lis SubscribeListener) *Subscriber {
 
 	if err := c.ShouldHostExist(); err != nil {
 		panic(err)

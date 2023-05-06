@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/shared-packages/pkg"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/Goboolean/shared-packages/pkg/broker"
 )
 
@@ -24,7 +24,7 @@ func (i *SubscribeListenerImpl) OnReceiveMessage(name string, data *broker.Stock
 
 
 func TestSubscriber(t *testing.T) {
-	sub := broker.NewSubscriber(&pkg.Config{
+	sub := broker.NewSubscriber(&resolver.Config{
 		Host: os.Getenv("KAFKA_HOST"),
 		Port: os.Getenv("KAFKA_PORT"),
 	}, &SubscribeListenerImpl{})
@@ -33,7 +33,7 @@ func TestSubscriber(t *testing.T) {
 		t.Errorf("NewSubscriber() failed: see log.Fatal")
 	}
 
-	pub := broker.NewPublisher(&pkg.Config{
+	pub := broker.NewPublisher(&resolver.Config{
 		Host: os.Getenv("KAFKA_HOST"),
 		Port: os.Getenv("KAFKA_PORT"),
 	})

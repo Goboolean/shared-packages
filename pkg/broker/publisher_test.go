@@ -6,12 +6,12 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/Goboolean/shared-packages/pkg"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/Goboolean/shared-packages/pkg/broker"
 )
 
 var (
-	topic = "topic_test"
+	topic = "test_topic"
 	data = &broker.StockAggregate{}
 )
 
@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 
 func TestPublisher(t *testing.T) {
 
-	pub := broker.NewPublisher(&pkg.Config{
+	pub := broker.NewPublisher(&resolver.Config{
 		Host: os.Getenv("KAFKA_HOST"),
 		Port: os.Getenv("KAFKA_PORT"),
 	})

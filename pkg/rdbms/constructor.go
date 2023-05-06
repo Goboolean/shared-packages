@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/Goboolean/shared-packages/pkg"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 )
 
 
@@ -13,7 +13,7 @@ type PSQL struct {
 	*sql.DB
 }
 
-func NewDB(c *pkg.Config) *PSQL {
+func NewDB(c *resolver.Config) *PSQL {
 
 	if err := c.ShouldHostExist(); err != nil {
 		panic(err)

@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Goboolean/shared-packages/pkg"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/Goboolean/shared-packages/pkg/mongo"
 	"github.com/joho/godotenv"
 )
@@ -38,7 +38,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	c := pkg.Config{
+	c := resolver.Config{
 		Host:     os.Getenv("MONGO_HOST"),
 		Port:     os.Getenv("MONGO_PORT"),
 		Password: os.Getenv("MONGO_PASS"),

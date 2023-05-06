@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Goboolean/shared-packages/pkg"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/Goboolean/shared-packages/pkg/rdbms"
 	"github.com/joho/godotenv"
 )
@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	DB = rdbms.NewDB(&pkg.Config{
+	DB = rdbms.NewDB(&resolver.Config{
 		Host:     os.Getenv("PSQL_HOST"),
 		Port:     os.Getenv("PSQL_PORT"),
 		User:     os.Getenv("PSQL_USER"),

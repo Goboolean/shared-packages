@@ -3,7 +3,7 @@ package kafka
 import (
 	"fmt"
 
-	"github.com/Goboolean/shared-packages/pkg"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/Shopify/sarama"
 )
 
@@ -13,7 +13,7 @@ type Producer struct {
 
 /*"security.protocol": "SASL_SSL",*/
 
-func NewProducer(c *pkg.Config) *Producer {
+func NewProducer(c *resolver.Config) *Producer {
 
 	if err := c.ShouldHostExist(); err != nil {
 		panic(err)
