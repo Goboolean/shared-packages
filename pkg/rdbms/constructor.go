@@ -51,6 +51,3 @@ func (p *PSQL) Close() error {
 	return p.DB.Close()
 }
 
-func SetTx(tx *Transaction) *Queries {
-	return New(NewInstance()).WithTx(tx.tx)
-}
