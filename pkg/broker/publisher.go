@@ -14,7 +14,7 @@ type Publisher struct {
 	*kafka.Producer
 }
 
-/*"security.protocol": "SASL_SSL",*/
+
 
 func NewPublisher(c *resolver.Config) *Publisher {
 
@@ -30,8 +30,6 @@ func NewPublisher(c *resolver.Config) *Publisher {
 
 	config := &kafka.ConfigMap{
 		"bootstrap.servers": c.Address,
-		//"sasl.mechanism":    "PLAIN",
-		//"security.protocol": "SASL_PLAINTEXT",
 	}
 
 	producer, err := kafka.NewProducer(config)
@@ -73,6 +71,8 @@ func (p *Publisher) Ping(ctx context.Context) error {
 		return fmt.Errorf("timeout")
 	}
 
-	_, err := p.Producer.GetMetadata(nil, true, int(remaining.Milliseconds()))
+	metaData, err := p.Producer.GetMetadata(nil, true, int(remaining.Milliseconds()))
+
+	fmt.Println(metaData.OriginatingBroker.Host, metaData.OriginatingBroker.Port, metaData.OriginatingBroker.ID)
 	return err
 }
