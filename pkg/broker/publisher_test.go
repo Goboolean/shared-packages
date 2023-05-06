@@ -4,8 +4,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/joho/godotenv"
-
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/Goboolean/shared-packages/pkg/broker"
 )
@@ -15,21 +13,6 @@ var (
 	data = &broker.StockAggregate{}
 )
 
-
-func TestMain(m *testing.M) {
-
-	if err := os.Chdir("../../"); err != nil {
-		panic(err)
-	}
-
-	if err := godotenv.Load(); err != nil {
-		panic(err)
-	}
-	
-	code := m.Run()
-
-	os.Exit(code)
-}
 
 
 func TestPublisher(t *testing.T) {
