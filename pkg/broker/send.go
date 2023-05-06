@@ -43,6 +43,8 @@ func (p *Publisher) SendDataBatch(topic string, batch []StockAggregate) error {
 		bsonBatch[idx] = data
 	}
 
+	topic = packTopic(topic)
+
 	for idx := range batch {
 		msgChan <- &kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
