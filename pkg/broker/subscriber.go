@@ -1,8 +1,10 @@
 package broker
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -11,7 +13,7 @@ import (
 )
 
 type Subscriber struct {
-	consumer *kafka.Consumer
+	*kafka.Consumer
 
 	topic  string
 	config *kafka.ConfigMap
@@ -24,6 +26,10 @@ type Subscriber struct {
 
 
 func NewSubscriber(c *resolver.Config, lis SubscribeListener) *Subscriber {
+
+	var (
+		flagClosed chan struct{}
+	)
 
 	if err := c.ShouldHostExist(); err != nil {
 		panic(err)
@@ -49,7 +55,20 @@ func NewSubscriber(c *resolver.Config, lis SubscribeListener) *Subscriber {
 		return nil
 	}
 
-	flagClosed := make(chan struct{})
+	instance := &Subscriber{
+		config:     config,
+		listener:   lis,
+		flagClosed: flagClosed,
+	}
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancelFunc()
+
+	if err := instance.Ping(ctx); err != nil {
+		panic(err)
+	}
+
+	flagClosed = make(chan struct{})
 
 	go func(ch chan struct{}) {
 		for {
@@ -79,15 +98,11 @@ func NewSubscriber(c *resolver.Config, lis SubscribeListener) *Subscriber {
 		}
 	}(flagClosed)
 
-	return &Subscriber{
-		config: config,
-		listener: lis,
-		flagClosed: flagClosed,
-	}
+	return instance
 }
 
 func (c *Subscriber) Close() error {
-	if err := c.consumer.Close(); err != nil {
+	if err := c.Consumer.Close(); err != nil {
 		return errors.Wrap(err, "failed to subscribe topic")
 	}
 
@@ -95,10 +110,20 @@ func (c *Subscriber) Close() error {
 	return nil
 }
 
-func (c *Subscriber) Subscribe(stock string) error {
-	if err := c.consumer.Subscribe(stock, nil); err != nil {
-		return fmt.Errorf("failed to subscribe topic: %v", err)
+
+
+func (s *Subscriber) Ping(ctx context.Context) error {
+	deadline, ok := ctx.Deadline()
+
+	if !ok {
+		return fmt.Errorf("timeout setting on ctx required")
 	}
 
-	return nil
+	remaining := time.Until(deadline)
+	if remaining < 0 {
+		return fmt.Errorf("timeout")
+	}
+
+	_, err := s.GetMetadata(nil, true, int(remaining.Milliseconds()))
+	return err
 }

@@ -1,15 +1,17 @@
 package broker
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 )
 
 type Publisher struct {
-	producer *kafka.Producer
+	*kafka.Producer
 }
 
 /*"security.protocol": "SASL_SSL",*/
@@ -38,12 +40,39 @@ func NewPublisher(c *resolver.Config) *Publisher {
 		return nil
 	}
 
-	return &Publisher{producer: producer}
+	instance := &Publisher{Producer: producer}
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancelFunc()
+
+	if err := instance.Ping(ctx); err != nil {
+		panic(err)
+	}
+
+	return instance
 }
 
-//protoc -I api/proto --go_out=pkg/kafka --go_opt=paths=source_relative stockaggs.proto
+
 
 func (p *Publisher) Close() error {
-	p.producer.Close()
+	p.Producer.Close()
 	return nil
+}
+
+
+
+func (p *Publisher) Ping(ctx context.Context) error {
+	deadline, ok := ctx.Deadline()
+
+	if !ok {
+		return fmt.Errorf("timeout setting on ctx required")
+	}
+
+	remaining := time.Until(deadline)
+	if remaining < 0 {
+		return fmt.Errorf("timeout")
+	}
+
+	_, err := p.Producer.GetMetadata(nil, true, int(remaining.Milliseconds()))
+	return err
 }

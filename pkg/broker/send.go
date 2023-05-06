@@ -17,7 +17,7 @@ func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 		return err
 	}
 
-	if err := p.producer.Produce(&kafka.Message{
+	if err := p.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 		Value:          bsonData,
 	}, nil); err != nil {
@@ -29,7 +29,7 @@ func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 
 func (p *Publisher) SendDataBatch(topic string, batch []StockAggregate) error {
 
-	msgChan := p.producer.ProduceChannel()
+	msgChan := p.ProduceChannel()
 
 	bsonBatch := make([][]byte, len(batch))
 
@@ -52,7 +52,7 @@ func (p *Publisher) SendDataBatch(topic string, batch []StockAggregate) error {
 		}
 	}
 
-	if e := p.producer.Flush(int(time.Minute)); e != 0 {
+	if e := p.Flush(int(time.Minute)); e != 0 {
 		return errors.New("failed some flush")
 	}
 
