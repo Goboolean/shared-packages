@@ -64,7 +64,7 @@ func TestInsertStockBatch(t *testing.T) {
 
 	tx := mongo.NewTransaction(session, context.TODO())
 
-	if err := queries.InsertStockBatch(*tx, stockName, stockBatch); err != nil {
+	if err := queries.InsertStockBatch(tx, stockName, stockBatch); err != nil {
 		t.Errorf("failed to insert: %v", err)
 	}
 }
@@ -81,7 +81,7 @@ func TestFetchAllStockBatch(t *testing.T) {
 
 	stockChan := make(chan mongo.StockAggregate, 100)
 
-	if err := queries.FetchAllStockBatch(*tx, stockName, stockChan); err != nil {
+	if err := queries.FetchAllStockBatch(tx, stockName, stockChan); err != nil {
 		t.Errorf("failed to fetch: %v", err)
 	}
 

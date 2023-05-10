@@ -1,6 +1,7 @@
 package mongo
 
 import (
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -16,7 +17,7 @@ func New(db *DB) *Queries {
 
 
 
-func (q *Queries) InsertStockBatch(tx Transaction, stock string, batch []StockAggregate) error {
+func (q *Queries) InsertStockBatch(tx resolver.Transactioner, stock string, batch []StockAggregate) error {
 
 	coll := q.client.Database(q.client.DefaultDatabase).Collection(stock)
 	session := tx.Transaction().(mongo.Session)
@@ -36,7 +37,7 @@ func (q *Queries) InsertStockBatch(tx Transaction, stock string, batch []StockAg
 
 
 
-func (q *Queries) FetchAllStockBatch(tx Transaction, stock string, stockChan chan StockAggregate) error {
+func (q *Queries) FetchAllStockBatch(tx resolver.Transactioner, stock string, stockChan chan StockAggregate) error {
 
 	coll := q.client.Database(q.client.DefaultDatabase).Collection(stock)
 	session := tx.Transaction().(mongo.Session)
