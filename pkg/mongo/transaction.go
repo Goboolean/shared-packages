@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -28,6 +29,6 @@ func (d *Transaction) Transaction() interface{} {
 	return d.session
 }
 
-func NewTransaction(session mongo.Session, ctx context.Context) *Transaction {
+func NewTransaction(session mongo.Session, ctx context.Context) resolver.Transactioner {
 	return &Transaction{session: session, ctx: ctx}
 }
