@@ -9,6 +9,8 @@ type Config struct {
 	Password string
 	Database string
 	Address  string
+	Key      string
+	Path     string
 }
 
 func (c *Config) ShouldHostExist() error {
@@ -52,3 +54,18 @@ func (c *Config) ShouldAddrExist() error {
 	}
 	return nil
 }
+
+func (c *Config) ShouldKeyExist() error {
+	if c.Key == "" {
+		return fmt.Errorf("config vlalue KEY required")
+	}
+	return nil
+}
+
+func (c *Config) ShouldPathExist() error {
+	if c.Path == "" {
+		return fmt.Errorf("config vlalue PATH required")
+	}
+	return nil
+}
+
