@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/Shopify/sarama v1.38.1
 	github.com/confluentinc/confluent-kafka-go v1.9.2
+	github.com/joho/godotenv v1.5.1
 	github.com/pkg/errors v0.9.1
 	go.mongodb.org/mongo-driver v1.11.4
 	google.golang.org/protobuf v1.30.0
