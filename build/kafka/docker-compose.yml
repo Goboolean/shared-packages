@@ -3,16 +3,15 @@ version: "2"
 services:
   kafka:
     image: docker.io/bitnami/kafka:3.4
+    hostname: mulmuri.dev
     container_name: kafka
     ports:
-      - "19092:19092"
+      - "9092:9092"
     volumes:
       - "kafka_data:/bitnami"
     environment:
       - "ALLOW_PLAINTEXT_LISTENER=yes"
-      - "KAFKA_INTER_BROKER_USER=goboolean"
-      - "KAFKA_INTER_BROKER_PASSWORD=goboolean"
-      - "KAFKA_CERTIFICATE_PASSWORD=goboolean"
+      - "listeners=PLAINTEXT://mulmuri.dev:9092"
 
 volumes:
   kafka_data:
