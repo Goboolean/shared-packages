@@ -12,6 +12,12 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+
+
+type SubscribeListener interface {
+	OnReceiveMessage(name string, stock *StockAggregate)
+}
+
 type Subscriber struct {
 	*kafka.Consumer
 
@@ -126,4 +132,14 @@ func (s *Subscriber) Ping(ctx context.Context) error {
 
 	_, err := s.GetMetadata(nil, true, int(remaining.Milliseconds()))
 	return err
+}
+
+
+
+func (c *Subscriber) Subscribe(stock string) error {
+	if err := c.Consumer.Subscribe(stock, nil); err != nil {
+		return fmt.Errorf("failed to subscribe topic: %v", err)
+	}
+
+	return nil
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"google.golang.org/protobuf/proto"
 )
 
 type Publisher struct {
@@ -75,4 +76,61 @@ func (p *Publisher) Ping(ctx context.Context) error {
 
 	fmt.Println(metaData.OriginatingBroker.Host, metaData.OriginatingBroker.Port, metaData.OriginatingBroker.ID)
 	return err
+}
+
+
+
+
+func (p *Publisher) SendData(topic string, data *StockAggregate) error {
+
+	bsonData, err := proto.Marshal(data)
+
+	if err != nil {
+		return err
+	}
+
+	if err := p.Produce(&kafka.Message{
+		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+		Value:          bsonData,
+	}, nil); err != nil {
+		return err
+	}
+
+	if remain := p.Flush(int(defaultTimeout.Milliseconds())); remain != 0 {
+		return fmt.Errorf("%d events is stil remaining: ", remain)
+	}
+
+	return nil
+}
+
+func (p *Publisher) SendDataBatch(topic string, batch []StockAggregate) error {
+
+	msgChan := p.ProduceChannel()
+
+	bsonBatch := make([][]byte, len(batch))
+
+	for idx := range batch {
+		data, err := proto.Marshal(&batch[idx])
+
+		if err != nil {
+			return err
+		}
+
+		bsonBatch[idx] = data
+	}
+
+	topic = packTopic(topic)
+
+	for idx := range batch {
+		msgChan <- &kafka.Message{
+			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+			Value:          bsonBatch[idx],
+		}
+	}
+
+	if remain := p.Flush(int(defaultTimeout.Milliseconds())); remain != 0 {
+		return fmt.Errorf("%d events is stil remaining: ", remain)
+	}
+
+	return nil
 }

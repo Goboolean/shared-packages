@@ -1,8 +1,10 @@
 package broker_test
 
 import (
+	"context"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/Goboolean/shared-packages/pkg/broker"
 	"github.com/Goboolean/shared-packages/pkg/resolver"
@@ -61,3 +63,21 @@ func TestConfigurator(t *testing.T) {
 }
 
 
+
+func TestCreateDeleteTopic(t *testing.T) {
+
+	SetupConfigurator()
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancelFunc()
+
+	if err := conf.CreateTopic(ctx, topic); err != nil {
+		t.Errorf("CreateTopic() = %v", err)
+	}
+	
+	if err := conf.DeleteTopic(ctx, topic); err != nil {
+		t.Errorf("DeleteTopic() = %v", err)
+	}
+
+	TeardownConfigurator()
+}
