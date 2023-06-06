@@ -15,7 +15,7 @@ import (
 
 
 type SubscribeListener interface {
-	OnReceiveMessage(name string, stock *StockAggregate)
+	OnReceiveStockAggs(name string, stock *StockAggregate)
 }
 
 type Subscriber struct {
@@ -99,7 +99,7 @@ func NewSubscriber(c *resolver.Config, lis SubscribeListener) *Subscriber {
 
 				topic := unpackTopic(*msg.TopicPartition.Topic)
 
-				lis.OnReceiveMessage(topic, &data)
+				lis.OnReceiveStockAggs(topic, &data)
 			}
 		}
 	}(flagClosed)

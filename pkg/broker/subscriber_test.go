@@ -47,7 +47,7 @@ type SubscribeListenerImpl struct {}
 
 var stockChan chan *broker.StockAggregate
 
-func (i *SubscribeListenerImpl) OnReceiveMessage(name string, data *broker.StockAggregate) {
+func (i *SubscribeListenerImpl) OnReceiveStockAggs(name string, data *broker.StockAggregate) {
 	stockChan <- data
 }
 
