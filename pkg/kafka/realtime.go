@@ -24,7 +24,6 @@ const (
 	RealFinished
 )
 
-const realEventTopicName = "sim"
 
 
 func (p *Producer) SendRealEvent(event *RealEvent) error {
@@ -36,7 +35,7 @@ func (p *Producer) SendRealEvent(event *RealEvent) error {
 	}
 
 	msg := &sarama.ProducerMessage{
-		Topic: simEventTopicName,
+		Topic: realEventTopicName,
 		Value: sarama.ByteEncoder(data),
 	}
 
@@ -46,7 +45,7 @@ func (p *Producer) SendRealEvent(event *RealEvent) error {
 
 func (c *Consumer) SubscribeRealEvent(impl RealEventListener) error {
 
-	pc, err := c.consumer.ConsumePartition(SimulationEventTopic, 0, sarama.OffsetOldest)
+	pc, err := c.consumer.ConsumePartition(realEventTopicName, 0, sarama.OffsetOldest)
 	if err != nil {
 		return err
 	}

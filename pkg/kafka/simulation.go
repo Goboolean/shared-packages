@@ -24,7 +24,6 @@ const (
 	SimFinished
 )
 
-const simEventTopicName = "sim"
 
 
 func (p *Producer) SendSimEvent(event *SimEvent) error {
@@ -46,7 +45,7 @@ func (p *Producer) SendSimEvent(event *SimEvent) error {
 
 func (c *Consumer) SubscribeSimEvent(impl SimEventListener) error {
 
-	pc, err := c.consumer.ConsumePartition(SimulationEventTopic, 0, sarama.OffsetOldest)
+	pc, err := c.consumer.ConsumePartition(simEventTopicName, 0, sarama.OffsetOldest)
 	if err != nil {
 		return err
 	}

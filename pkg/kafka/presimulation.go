@@ -24,7 +24,6 @@ const (
 	PreSimFinished
 )
 
-const preSimEventTopicName = "sim"
 
 
 func (p *Producer) SendPreSimEvent(event *SimEvent) error {
@@ -46,7 +45,7 @@ func (p *Producer) SendPreSimEvent(event *SimEvent) error {
 
 func (c *Consumer) SubscribePreSimEvent(impl PreSimEventListener) error {
 
-	pc, err := c.consumer.ConsumePartition(SimulationEventTopic, 0, sarama.OffsetOldest)
+	pc, err := c.consumer.ConsumePartition(preSimEventTopicName, 0, sarama.OffsetOldest)
 	if err != nil {
 		return err
 	}

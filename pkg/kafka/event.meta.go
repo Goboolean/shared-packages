@@ -2,6 +2,7 @@ package kafka
 
 
 const (
-	SimulationEventTopic string = "sim"
-	RealTradeEventTopic  string = "real"
+	simEventTopicName    string = "sim"
+	realEventTopicName   string = "real"
+	preSimEventTopicName string = "presim"
 )
