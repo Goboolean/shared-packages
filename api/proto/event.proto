@@ -4,18 +4,19 @@ package api;
 
 option go_package = "github.com/Goboolean/shared-packages/pkg/kafka";
 
-message Event {
-  int64 event_id = 1;
-  int32 state_id = 2;
-  string stock_id = 3;
-  string model = 4;
-  repeated int64 parameter = 5;
+message SimEvent {
+  int64 user_id = 1;
+  int64 event_id = 2;
+  int32 state_id = 3;
+  string stock_id = 4;
+  string model = 5;
+  repeated int64 parameter = 6;
 }
 
-message SimulationEvent {
-  Event event = 1;
-}
-
-message RealTradeEvent {
-  Event event = 1;
+message RealEvent {
+  int64 event_id = 2;
+  int32 state_id = 3;
+  string stock_id = 4;
+  string model = 5;
+  repeated int64 parameter = 6;
 }
