@@ -10,24 +10,24 @@ import (
 
 
 
-type RealEventType int
+type PreSimEventType int
 
-type RealEventListener interface {
-	OnReceiveAllRealEvent(*RealEvent)
+type PreSimEventListener interface {
+	OnReceiveAllPreSimEvent(*SimEvent)
 }
 
 const (
-	RealCreated RealEventType = iota
-	RealPending
-	RealAllocated
-	RealFailed
-	RealFinished
+	PreSimCreated PreSimEventType = iota
+	PreSimPending
+	PreSimAllocated
+	PreSimFailed
+	PreSimFinished
 )
 
-const realEventTopicName = "sim"
+const preSimEventTopicName = "sim"
 
 
-func (p *Producer) SendRealEvent(event *RealEvent) error {
+func (p *Producer) SendPreSimEvent(event *SimEvent) error {
 
 	data, err := proto.Marshal(event)
 
@@ -44,7 +44,7 @@ func (p *Producer) SendRealEvent(event *RealEvent) error {
 	return err
 }
 
-func (c *Consumer) SubscribeRealEvent(impl RealEventListener) error {
+func (c *Consumer) SubscribePreSimEvent(impl PreSimEventListener) error {
 
 	pc, err := c.consumer.ConsumePartition(SimulationEventTopic, 0, sarama.OffsetOldest)
 	if err != nil {
@@ -66,11 +66,11 @@ func (c *Consumer) SubscribeRealEvent(impl RealEventListener) error {
 
 			for message := range pc.Messages() {
 
-				var event *RealEvent
+				var event *SimEvent
 	
 				proto.Unmarshal(message.Value, event)
 	
-				impl.OnReceiveAllRealEvent(event)
+				impl.OnReceiveAllPreSimEvent(event)
 			}
 		}
 	}(c.ctx)
