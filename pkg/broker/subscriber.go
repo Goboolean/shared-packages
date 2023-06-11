@@ -19,23 +19,19 @@ type SubscribeListener interface {
 }
 
 type Subscriber struct {
-	*kafka.Consumer
+	consumer *kafka.Consumer
 
 	topic  string
 	config *kafka.ConfigMap
 
 	listener SubscribeListener
 
-	flagClosed chan struct{}
+	ctx context.Context
 }
 
 
 
-func NewSubscriber(c *resolver.Config, lis SubscribeListener) *Subscriber {
-
-	var (
-		flagClosed chan struct{}
-	)
+func NewSubscriber(c *resolver.Config, ctx context.Context, lis SubscribeListener) *Subscriber {
 
 	if err := c.ShouldHostExist(); err != nil {
 		panic(err)
@@ -62,57 +58,59 @@ func NewSubscriber(c *resolver.Config, lis SubscribeListener) *Subscriber {
 	}
 
 	instance := &Subscriber{
+		consumer: consumer,
 		config:     config,
 		listener:   lis,
-		flagClosed: flagClosed,
+		ctx: ctx,
 	}
 
-	ctx, cancelFunc := context.WithTimeout(context.Background(), defaultTimeout)
+	pingCtx, cancelFunc := context.WithTimeout(ctx, defaultTimeout)
 	defer cancelFunc()
 
-	if err := instance.Ping(ctx); err != nil {
+	if err := instance.Ping(pingCtx); err != nil {
 		panic(err)
 	}
 
-	flagClosed = make(chan struct{})
-
-	go func(ch chan struct{}) {
-		for {
-			select {
-			case <-ch:
-				return
-			default:
-
-			}
-
-			msg, err := consumer.ReadMessage(-1)
-
-			if err != nil {
-				log.Fatalf("err: failed to read received message: %v", err)
-
-			} else {
-				var data StockAggregate
-
-				if err := proto.Unmarshal(msg.Value, &data); err != nil {
-					log.Fatalf("err: failed to deserialize message: %v", err)
-				}
-
-				topic := unpackTopic(*msg.TopicPartition.Topic)
-
-				lis.OnReceiveStockAggs(topic, &data)
-			}
-		}
-	}(flagClosed)
+	go instance.subscribeMessage(ctx)
 
 	return instance
 }
 
-func (c *Subscriber) Close() error {
-	if err := c.Consumer.Close(); err != nil {
+
+
+func (s *Subscriber) subscribeMessage(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+
+		}
+
+		msg, err := s.consumer.ReadMessage(-1)
+
+		if err != nil {
+			log.Fatalf("err: failed to read received message: %v", err)
+
+		} else {
+			var data StockAggregate
+
+			if err := proto.Unmarshal(msg.Value, &data); err != nil {
+				log.Fatalf("err: failed to deserialize message: %v", err)
+			}
+
+			topic := unpackTopic(*msg.TopicPartition.Topic)
+
+			s.listener.OnReceiveStockAggs(topic, &data)
+		}
+	}
+}
+
+func (s *Subscriber) Close() error {
+	if err := s.Close(); err != nil {
 		return errors.Wrap(err, "failed to subscribe topic")
 	}
 
-	c.flagClosed <- struct{}{}
 	return nil
 }
 
@@ -130,14 +128,14 @@ func (s *Subscriber) Ping(ctx context.Context) error {
 		return fmt.Errorf("timeout")
 	}
 
-	_, err := s.GetMetadata(nil, true, int(remaining.Milliseconds()))
+	_, err := s.consumer.GetMetadata(nil, true, int(remaining.Milliseconds()))
 	return err
 }
 
 
 
-func (c *Subscriber) Subscribe(stock string) error {
-	if err := c.Consumer.Subscribe(stock, nil); err != nil {
+func (s *Subscriber) Subscribe(stock string) error {
+	if err := s.consumer.Subscribe(stock, nil); err != nil {
 		return fmt.Errorf("failed to subscribe topic: %v", err)
 	}
 

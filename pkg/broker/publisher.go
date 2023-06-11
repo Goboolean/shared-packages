@@ -39,16 +39,7 @@ func NewPublisher(c *resolver.Config) *Publisher {
 		return nil
 	}
 
-	instance := &Publisher{Producer: producer}
-
-	ctx, cancelFunc := context.WithTimeout(context.Background(), defaultTimeout)
-	defer cancelFunc()
-
-	if err := instance.Ping(ctx); err != nil {
-		panic(err)
-	}
-
-	return instance
+	return &Publisher{Producer: producer}
 }
 
 
