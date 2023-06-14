@@ -1,70 +1,53 @@
 package kafka
 
 import (
+	"context"
+	"fmt"
 	"log"
 
-	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"google.golang.org/protobuf/proto"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Shopify/sarama"
 )
 
+
+
 type Consumer struct {
-	consumer *kafka.Consumer
-
-	topic  string
-	config *kafka.ConfigMap
-
-	instance SubscribeListener
+	consumer sarama.Consumer
+	ctx context.Context
 }
 
-/*"security.protocol": "SASL_SSL",*/
 
-func NewConsumer(stock string, instance SubscribeListener) *Consumer {
 
-	config := &kafka.ConfigMap{
-		"bootstrap.servers":       KAFKA_ADDR,
-		"sasl.mechanism":          "PLAIN",
-		"sasl.username":           KAFKA_USER,
-		"sasl.password":           KAFKA_PASS,
-		"auto.offset.reset":       "earliest",
-		"socket.keepalive.enable": true,
+func NewConsumer(c *resolver.Config, ctx context.Context) *Consumer {
+	
+	if err := c.ShouldHostExist(); err != nil {
+		panic(err)
 	}
 
-	consumer, err := kafka.NewConsumer(config)
+	if err := c.ShouldPortExist(); err != nil {
+		panic(err)
+	}
+
+	c.Address = fmt.Sprintf("%s:%s", c.Host, c.Port)
+
+	config := sarama.NewConfig()
+	config.Producer.Return.Errors = true
+
+	consumer, err := sarama.NewConsumer([]string{c.Address}, config)
 
 	if err != nil {
 		log.Fatalf("err: failed to laod kafka consumer: %v", err)
 		return nil
 	}
 
-	if err := consumer.Subscribe(stock, nil); err != nil {
-		log.Fatalf("err: failed to subscribe topic: %v", err)
-		return nil
-	}
-
-	go func() {
-		for {
-			msg, err := consumer.ReadMessage(-1)
-
-			if err != nil {
-				log.Fatalf("err: failed to read received message: %v", err)
-			} else {
-				data := StockAggregate{}
-
-				if err := proto.Unmarshal(msg.Value, &data); err != nil {
-					log.Fatalf("err: failed to deserialize message: %v", err)
-				}
-
-				instance.OnReceiveMessage(&data)
-			}
-		}
-	}()
-
 	return &Consumer{
-		topic:  stock,
-		config: config,
-		instance: instance,
+		consumer: consumer,
+		ctx: ctx,
 	}
+
 }
+
+
 
 func (c *Consumer) Close() error {
 	return c.consumer.Close()

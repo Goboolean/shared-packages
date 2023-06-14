@@ -4,23 +4,17 @@ import (
 	"os"
 	"testing"
 
+	"github.com/Goboolean/shared-packages/pkg/kafka"
 	"github.com/Goboolean/shared-packages/pkg/resolver"
-	"github.com/Goboolean/shared-packages/pkg/broker"
-)
-
-var (
-	topic = "topic_test"
-	send = &broker.StockAggregate{}
 )
 
 
-func TestPublisher(t *testing.T) {
-	pub := broker.NewPublisher(&resolver.Config{
+func TestProducer(t *testing.T) {
+
+	pub := kafka.NewProducer(&resolver.Config{
 		Host: os.Getenv("KAFKA_HOST"),
 		Port: os.Getenv("KAFKA_PORT"),
 	})
-
-
 
 	if err := pub.Close(); err != nil {
 		t.Errorf("NewPublisher() failed: %v", err)

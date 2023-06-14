@@ -11,7 +11,7 @@ type Producer struct {
 	producer sarama.SyncProducer
 }
 
-/*"security.protocol": "SASL_SSL",*/
+
 
 func NewProducer(c *resolver.Config) *Producer {
 
