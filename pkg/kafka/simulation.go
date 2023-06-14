@@ -28,6 +28,9 @@ const (
 
 func (p *Producer) SendSimEvent(event *SimEvent) error {
 
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	data, err := proto.Marshal(event)
 
 	if err != nil {
