@@ -13,7 +13,7 @@ import (
 type PreSimEventType int
 
 type PreSimEventListener interface {
-	OnReceiveAllPreSimEvent(*SimEvent)
+	OnReceiveAllPreSimEvent(*PreSimEvent)
 }
 
 const (
@@ -26,7 +26,7 @@ const (
 
 
 
-func (p *Producer) SendPreSimEvent(event *SimEvent) error {
+func (p *Producer) SendPreSimEvent(event *PreSimEvent) error {
 
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -68,7 +68,7 @@ func (c *Consumer) SubscribePreSimEvent(impl PreSimEventListener) error {
 
 			for message := range pc.Messages() {
 
-				var event *SimEvent
+				var event *PreSimEvent
 	
 				proto.Unmarshal(message.Value, event)
 	
