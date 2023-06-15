@@ -27,7 +27,7 @@ func (d *Transaction) Context() context.Context {
 
 func (d *Transaction) Transaction() interface{} {
 	return d.session
-}
+} 
 
 func NewTransaction(session sarama.SyncProducer, ctx context.Context) resolver.Transactioner {
 	return &Transaction{session: session, ctx: ctx}

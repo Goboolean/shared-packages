@@ -28,8 +28,6 @@ const (
 
 func (p *Producer) SendPreSimEvent(event *PreSimEvent) error {
 
-	p.mu.Lock()
-	defer p.mu.Unlock()
 
 	data, err := proto.Marshal(event)
 

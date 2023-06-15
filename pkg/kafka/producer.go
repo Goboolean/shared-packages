@@ -2,7 +2,6 @@ package kafka
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/Shopify/sarama"
@@ -10,7 +9,6 @@ import (
 
 type Producer struct {
 	producer sarama.SyncProducer
-	mu sync.Mutex
 }
 
 
@@ -32,7 +30,10 @@ func NewProducer(c *resolver.Config) *Producer {
 	config.Producer.Return.Successes = true
 	config.Producer.Transaction.ID = "nope"
 
+
 	producer, err := sarama.NewSyncProducer([]string{c.Address}, config)
+
+	producer.BeginTxn()
 
 	if err != nil {
 		panic(err)

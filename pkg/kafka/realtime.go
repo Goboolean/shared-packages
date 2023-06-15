@@ -28,8 +28,6 @@ const (
 
 func (p *Producer) SendRealEvent(event *RealEvent) error {
 
-	p.mu.Lock()
-	defer p.mu.Unlock()
 
 	data, err := proto.Marshal(event)
 
