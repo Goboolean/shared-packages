@@ -30,5 +30,8 @@ func (d *Transaction) Transaction() interface{} {
 } 
 
 func NewTransaction(session sarama.SyncProducer, ctx context.Context) resolver.Transactioner {
+	if err := session.BeginTxn(); err != nil {
+		panic(err)
+	}
 	return &Transaction{session: session, ctx: ctx}
 }

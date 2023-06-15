@@ -2,6 +2,8 @@ package kafka
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/Shopify/sarama"
@@ -28,18 +30,24 @@ func NewProducer(c *resolver.Config) *Producer {
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Return.Successes = true
-	config.Producer.Transaction.ID = "nope"
+	config.Producer.Transaction.ID = createTransactionID()
 
 
 	producer, err := sarama.NewSyncProducer([]string{c.Address}, config)
-
-	producer.BeginTxn()
 
 	if err != nil {
 		panic(err)
 	}
 
 	return &Producer{producer: producer}
+}
+
+
+
+func createTransactionID() string {
+	pid := os.Getpid()
+	pidString := strconv.Itoa(pid)
+	return pidString
 }
 
 
