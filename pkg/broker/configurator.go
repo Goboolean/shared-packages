@@ -75,6 +75,15 @@ func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 
 	topic = packTopic(topic)
 
+	exists, err := c.TopicExists(ctx, topic)
+	if err != nil {
+		return err
+	}
+
+	if exists {
+		return nil
+	}
+
 	topicInfo := kafka.TopicSpecification{
 		Topic: topic,
 		NumPartitions: 1,
