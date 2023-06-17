@@ -73,9 +73,11 @@ func (c *Configurator) Ping(ctx context.Context) error {
 
 func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 
+	topic = packTopic(topic)
+
 	topicInfo := kafka.TopicSpecification{
 		Topic: topic,
-		NumPartitions: 10,
+		NumPartitions: 1,
 		ReplicationFactor: 1,
 	}
 
@@ -96,6 +98,8 @@ func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 
 func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
 
+	topic = packTopic(topic)
+
 	result, err := c.AdminClient.DeleteTopics(ctx, []string{topic})
 
 	if err != nil {
@@ -113,6 +117,8 @@ func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
 
 func (c *Configurator) TopicExists(ctx context.Context, topic string) (bool, error) {
 
+	topic = packTopic(topic)
+
 	deadline, ok := ctx.Deadline()
 
 	if !ok {
@@ -127,5 +133,37 @@ func (c *Configurator) TopicExists(ctx context.Context, topic string) (bool, err
 	}
 
 	_, exists := metadata.Topics[topic]
+	for topicName := range metadata.Topics {
+		fmt.Println(topicName)
+	}
 	return exists, nil
+}
+
+
+
+func (c *Configurator) GetTopicList(ctx context.Context) ([]string, error) {
+
+	deadline, ok := ctx.Deadline()
+
+	if !ok {
+		return nil, fmt.Errorf("timeout setting on ctx required")
+	}
+
+	remaining := time.Until(deadline)
+
+	metadata, err := c.AdminClient.GetMetadata(nil, true, int(remaining.Milliseconds()))
+	if err != nil {
+		return nil, err
+	}
+
+	for topicName := range metadata.Topics {
+		fmt.Println(topicName)
+	}
+	topicList := make([]string, len(metadata.Topics))
+
+	for topic := range metadata.Topics {
+		topicList = append(topicList, topic)
+	}
+
+	return topicList, nil
 }
