@@ -26,9 +26,7 @@ func SetupSubscriber() {
 
 
 func TeardownSubscriber() {
-	if err := sub.Close(); err != nil {
-		panic(err)
-	}
+	sub.Close()
 }
 
 
@@ -54,6 +52,7 @@ func (i *SubscribeListenerImpl) OnReceiveStockAggs(name string, data *broker.Sto
 
 func TestSubscribe(t *testing.T) {
 
+	var topic = "test-topic"
 	SetupSubscriber()
 
 	type args struct {

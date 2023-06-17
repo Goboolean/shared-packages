@@ -8,7 +8,6 @@ import (
 
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -106,12 +105,8 @@ func (s *Subscriber) subscribeMessage(ctx context.Context) {
 	}
 }
 
-func (s *Subscriber) Close() error {
-	if err := s.Close(); err != nil {
-		return errors.Wrap(err, "failed to subscribe topic")
-	}
-
-	return nil
+func (s *Subscriber) Close() {
+	s.Close()
 }
 
 

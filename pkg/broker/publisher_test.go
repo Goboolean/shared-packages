@@ -26,9 +26,7 @@ func SetupPublisher() {
 }
 
 func TeardownPublisher() {
-	if err := pub.Close(); err != nil {
-		panic(err)
-	}
+	pub.Close()
 }
 
 
@@ -44,6 +42,7 @@ func TestPublisher(t *testing.T) {
 
 func TestSendData(t *testing.T) {
 
+	var topic = "test-topic"
 	SetupPublisher()
 
 	if err := pub.SendData(topic, data); err != nil {
@@ -56,6 +55,7 @@ func TestSendData(t *testing.T) {
 
 func TestSendDataBatch(t *testing.T) {
 
+	var topic = "test-topic"
 	SetupPublisher()
 
 	if err := pub.SendDataBatch(topic, dataBatch); err != nil {
@@ -64,3 +64,6 @@ func TestSendDataBatch(t *testing.T) {
 
 	TeardownPublisher()
 }
+
+
+

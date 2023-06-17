@@ -31,6 +31,7 @@ func NewPublisher(c *resolver.Config) *Publisher {
 
 	config := &kafka.ConfigMap{
 		"bootstrap.servers": c.Address,
+		"acks": "1",
 	}
 
 	producer, err := kafka.NewProducer(config)
@@ -44,9 +45,8 @@ func NewPublisher(c *resolver.Config) *Publisher {
 
 
 
-func (p *Publisher) Close() error {
+func (p *Publisher) Close() {
 	p.Producer.Close()
-	return nil
 }
 
 
