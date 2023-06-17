@@ -10,8 +10,8 @@ import (
 
 
 var (
-	stockName = "asdf"
-	stockBatch = []mongo.StockAggregate{
+	stockName = "test-stock"
+	stockBatch = []*mongo.StockAggregate{
 		{},
 		{},
 	}
@@ -34,7 +34,7 @@ func TestInsertStockBatch(t *testing.T) {
 }
 
 
-func TestFetchAllStockBatch(t *testing.T) {
+func TestFetchAllStockBatchMassive(t *testing.T) {
 
 	session, err := db.StartSession()
 	if err != nil {
@@ -43,9 +43,9 @@ func TestFetchAllStockBatch(t *testing.T) {
 
 	tx := mongo.NewTransaction(session, context.TODO())
 
-	stockChan := make(chan mongo.StockAggregate, 100)
+	stockChan := make(chan *mongo.StockAggregate, 100)
 
-	if err := queries.FetchAllStockBatch(tx, stockName, stockChan); err != nil {
+	if err := queries.FetchAllStockBatchMassive(tx, stockName, stockChan); err != nil {
 		t.Errorf("failed to fetch: %v", err)
 	}
 
