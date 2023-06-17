@@ -53,3 +53,11 @@ func NewDB(c *resolver.Config) *DB {
 		DefaultDatabase: c.Database,
 	}
 }
+
+func (db *DB) Ping() error {
+	return db.Ping()
+}
+
+func (db *DB) Close() error {
+	return db.Disconnect(context.Background())
+}
