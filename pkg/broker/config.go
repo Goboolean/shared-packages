@@ -11,7 +11,7 @@ var defaultTimeout = time.Second * 3
 
 
 
-var prefix string = "broker:"
+var prefix string = "broker."
 
 func packTopic(topic string) string {
 	return prefix + topic
