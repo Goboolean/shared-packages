@@ -3,9 +3,7 @@ package mongo
 import (
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Queries struct {
@@ -90,6 +88,19 @@ func (q *Queries) FetchAllStockBatchMassive(tx resolver.Transactioner, stock str
 			stockChan <- data
 		}
 		return nil, nil
+	})
+
+	return err
+}
+
+
+func (q *Queries) ClearAllStockData(tx resolver.Transactioner, stock string) error {
+	
+	coll := q.client.Database(q.client.DefaultDatabase).Collection(stock)
+	session := tx.Transaction().(mongo.Session)
+
+	_, err := session.WithTransaction(tx.Context(), func(ctx mongo.SessionContext) (interface{}, error) {
+		return coll.DeleteMany(ctx, bson.D{})
 	})
 
 	return err
