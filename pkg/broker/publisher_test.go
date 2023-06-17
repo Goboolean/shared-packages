@@ -13,7 +13,7 @@ import (
 var (
 	pub *broker.Publisher
 	data = &broker.StockAggregate{}
-	dataBatch = []broker.StockAggregate{
+	dataBatch = []*broker.StockAggregate{
 		{}, {}, {},
 	}
 )
@@ -53,6 +53,18 @@ func TestSendData(t *testing.T) {
 
 	var topic = "test-topic"
 	SetupPublisher()
+	SetupConfigurator()
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancelFunc()
+
+	exists, err := conf.TopicExists(ctx, topic)
+	if err != nil {
+		t.Errorf("failed to check topic exists: %v", err)
+	}
+	if !exists {
+		t.Errorf("topic does not exist")
+	}
 
 	if err := pub.SendData(topic, data); err != nil {
 		t.Errorf("SendData() failed: %v", err)
@@ -66,6 +78,18 @@ func TestSendDataBatch(t *testing.T) {
 
 	var topic = "test-topic"
 	SetupPublisher()
+	SetupConfigurator()
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancelFunc()
+
+	exists, err := conf.TopicExists(ctx, topic)
+	if err != nil {
+		t.Errorf("failed to check topic exists: %v", err)
+	}
+	if !exists {
+		t.Errorf("topic does not exist")
+	}
 
 	if err := pub.SendDataBatch(topic, dataBatch); err != nil {
 		t.Errorf("SendDataBatch() failed: %v", err)

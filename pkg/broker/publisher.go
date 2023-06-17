@@ -12,7 +12,7 @@ import (
 )
 
 type Publisher struct {
-	*kafka.Producer
+	producer *kafka.Producer
 }
 
 
@@ -31,7 +31,8 @@ func NewPublisher(c *resolver.Config) *Publisher {
 
 	config := &kafka.ConfigMap{
 		"bootstrap.servers": c.Address,
-		"acks": "1",
+		"acks": 0,
+		"go.delivery.reports": false,
 	}
 
 	producer, err := kafka.NewProducer(config)
@@ -40,13 +41,16 @@ func NewPublisher(c *resolver.Config) *Publisher {
 		return nil
 	}
 
-	return &Publisher{Producer: producer}
+	producer.Events()
+	producer.ProduceChannel()
+
+	return &Publisher{producer: producer}
 }
 
 
 
 func (p *Publisher) Close() {
-	p.Producer.Close()
+	p.producer.Close()
 }
 
 
@@ -60,7 +64,7 @@ func (p *Publisher) Ping(ctx context.Context) error {
 
 	remaining := time.Until(deadline)
 
-	_, err := p.Producer.GetMetadata(nil, true, int(remaining.Milliseconds()))
+	_, err := p.producer.GetMetadata(nil, true, int(remaining.Milliseconds()))
 	return err
 }
 
@@ -69,40 +73,46 @@ func (p *Publisher) Ping(ctx context.Context) error {
 
 func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 
-	bsonData, err := proto.Marshal(data)
+	topic = packTopic(topic)
+
+	binaryData, err := proto.Marshal(data)
 
 	if err != nil {
 		return err
 	}
 
-	if err := p.Produce(&kafka.Message{
+	if err := p.producer.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-		Value:          bsonData,
+		Value:          binaryData,
 	}, nil); err != nil {
 		return err
 	}
 
-	if remain := p.Flush(int(defaultTimeout.Milliseconds())); remain != 0 {
+	if remain := p.producer.Flush(int(defaultTimeout.Milliseconds())); remain != 0 {
 		return fmt.Errorf("%d events is stil remaining: ", remain)
 	}
 
 	return nil
 }
 
-func (p *Publisher) SendDataBatch(topic string, batch []StockAggregate) error {
 
-	msgChan := p.ProduceChannel()
 
-	bsonBatch := make([][]byte, len(batch))
+func (p *Publisher) SendDataBatch(topic string, batch []*StockAggregate) error {
+
+	topic = packTopic(topic)
+
+	msgChan := p.producer.ProduceChannel()
+
+	binaryBatch := make([][]byte, len(batch))
 
 	for idx := range batch {
-		data, err := proto.Marshal(&batch[idx])
+		data, err := proto.Marshal(batch[idx])
 
 		if err != nil {
 			return err
 		}
 
-		bsonBatch[idx] = data
+		binaryBatch[idx] = data
 	}
 
 	topic = packTopic(topic)
@@ -110,11 +120,11 @@ func (p *Publisher) SendDataBatch(topic string, batch []StockAggregate) error {
 	for idx := range batch {
 		msgChan <- &kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-			Value:          bsonBatch[idx],
+			Value:          binaryBatch[idx],
 		}
 	}
 
-	if remain := p.Flush(int(defaultTimeout.Milliseconds())); remain != 0 {
+	if remain := p.producer.Flush(int(defaultTimeout.Milliseconds())); remain != 0 {
 		return fmt.Errorf("%d events is stil remaining: ", remain)
 	}
 
