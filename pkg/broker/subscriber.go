@@ -106,7 +106,7 @@ func (s *Subscriber) subscribeMessage(ctx context.Context) {
 }
 
 func (s *Subscriber) Close() {
-	s.Close()
+	s.consumer.Close()
 }
 
 
