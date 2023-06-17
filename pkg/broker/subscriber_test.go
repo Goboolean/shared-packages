@@ -1,14 +1,14 @@
 package broker_test
 
 import (
-	"os"
-	"testing"
 	"context"
+	"os"
 	"reflect"
+	"testing"
 	"time"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/Goboolean/shared-packages/pkg/broker"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 )
 
 
@@ -51,7 +51,7 @@ func TestSubscriber(t *testing.T) {
 
 type SubscribeListenerImpl struct {}
 
-var stockChan chan *broker.StockAggregate
+var stockChan = make(chan *broker.StockAggregate)
 
 func (i *SubscribeListenerImpl) OnReceiveStockAggs(name string, data *broker.StockAggregate) {
 	stockChan <- data
@@ -62,6 +62,7 @@ func TestSubscribe(t *testing.T) {
 
 	var topic = "test-topic"
 	SetupSubscriber()
+	SetupPublisher()
 	SetupConfigurator()
 
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
@@ -101,7 +102,11 @@ func TestSubscribe(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+
+			if err := sub.Subscribe(topic); err != nil {
+				t.Errorf("Subscribe() = %v", err)
+			}
 
 			if err := pub.SendData(tt.args.topic, tt.args.data); err != nil {
 				t.Errorf("SendData() = %v", err)
@@ -112,7 +117,7 @@ func TestSubscribe(t *testing.T) {
 				t.Errorf("timeout: failed to receive data")
 			case got := <- stockChan:
 				if !reflect.DeepEqual(got, tt.want) {
-					t.Errorf("ReplaceD() = %v, want %v", got, tt.want)
+					t.Errorf("OnReceiveStockAggs() = %v, want %v", got, tt.want)
 				}
 			}
 
@@ -127,5 +132,6 @@ func TestSubscribe(t *testing.T) {
 	close(stockChan)
 
 	TeardownSubscriber()
+	TeardownPublisher()
 	TeardownConfigurator()
 }

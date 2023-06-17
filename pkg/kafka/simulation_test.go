@@ -22,6 +22,8 @@ func (t *SimEventTester) OnReceiveAllSimEvent(e *kafka.SimEvent) {
 	simEventReceivedList = append(simEventReceivedList, e)
 }
 
+func (t *SimEventTester) OnReceiveAllSimRollbackEvent(e *kafka.SimEvent) {}
+
 
 func TestSimulation(t *testing.T) {
 

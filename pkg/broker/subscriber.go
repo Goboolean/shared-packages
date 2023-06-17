@@ -127,6 +127,8 @@ func (s *Subscriber) Ping(ctx context.Context) error {
 
 
 func (s *Subscriber) Subscribe(stock string) error {
+	stock = packTopic(stock)
+
 	if err := s.consumer.Subscribe(stock, nil); err != nil {
 		return fmt.Errorf("failed to subscribe topic: %v", err)
 	}
