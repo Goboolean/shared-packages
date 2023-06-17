@@ -1,8 +1,10 @@
 package broker_test
 
 import (
+	"context"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/Goboolean/shared-packages/pkg/broker"
 	"github.com/Goboolean/shared-packages/pkg/resolver"
@@ -34,8 +36,15 @@ func TeardownPublisher() {
 func TestPublisher(t *testing.T) {
 
 	SetupPublisher()
-	TeardownPublisher()
 
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancelFunc()
+
+	if err := pub.Ping(ctx); err != nil {
+		t.Errorf("Ping() failed: %v", err)
+	}
+
+	TeardownPublisher()
 }
 
 

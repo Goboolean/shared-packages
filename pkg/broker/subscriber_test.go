@@ -35,6 +35,14 @@ func TeardownSubscriber() {
 func TestSubscriber(t *testing.T) {
 
 	SetupSubscriber()
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancelFunc()
+
+	if err := sub.Ping(ctx); err != nil {
+		t.Errorf("Ping() failed: %v", err)	
+	}
+
 	TeardownSubscriber()
 }
 
