@@ -71,6 +71,7 @@ func TestSendData(t *testing.T) {
 	}
 
 	TeardownPublisher()
+	TeardownConfigurator()
 }
 
 
@@ -96,6 +97,7 @@ func TestSendDataBatch(t *testing.T) {
 	}
 
 	TeardownPublisher()
+	TeardownConfigurator()
 }
 
 

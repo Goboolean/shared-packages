@@ -62,6 +62,18 @@ func TestSubscribe(t *testing.T) {
 
 	var topic = "test-topic"
 	SetupSubscriber()
+	SetupConfigurator()
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancelFunc()
+
+	exists, err := conf.TopicExists(ctx, topic)
+	if err != nil {
+		t.Errorf("failed to check topic exists: %v", err)
+	}
+	if !exists {
+		t.Errorf("topic does not exist")
+	}
 
 	type args struct {
 		topic string
@@ -76,7 +88,7 @@ func TestSubscribe(t *testing.T) {
 		{
 			name: "send mock data",
 			args: args{
-				topic: "mock",
+				topic: topic,
 				data: &broker.StockAggregate{
 					Average: 1234,
 				},
@@ -115,4 +127,5 @@ func TestSubscribe(t *testing.T) {
 	close(stockChan)
 
 	TeardownSubscriber()
+	TeardownConfigurator()
 }

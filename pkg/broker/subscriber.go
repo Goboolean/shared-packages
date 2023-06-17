@@ -44,9 +44,9 @@ func NewSubscriber(c *resolver.Config, ctx context.Context, lis SubscribeListene
 
 	config := &kafka.ConfigMap{
 		"bootstrap.servers":       c.Address,
-		"sasl.mechanism":          "PLAIN",
 		"auto.offset.reset":       "earliest",
 		"socket.keepalive.enable": true,
+		"group.id":          "goboolean.group",
 	}
 
 	consumer, err := kafka.NewConsumer(config)
