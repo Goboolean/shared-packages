@@ -2,18 +2,12 @@ package mongo_test
 
 import (
 	"context"
-	"os"
 	"testing"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/Goboolean/shared-packages/pkg/mongo"
-	"github.com/joho/godotenv"
 )
 
-var (
-	instance *mongo.DB
-	queries *mongo.Queries
-)
+
 
 var (
 	stockName = "asdf"
@@ -24,40 +18,10 @@ var (
 )
 
 
-var testStockName string = ""
-
-
-
-func TestMain(m *testing.M) {
-
-	if err := os.Chdir("../../"); err != nil {
-		panic(err)
-	}
-
-	if err := godotenv.Load(); err != nil {
-		panic(err)
-	}
-
-	c := resolver.Config{
-		Host:     os.Getenv("MONGO_HOST"),
-		Port:     os.Getenv("MONGO_PORT"),
-		Password: os.Getenv("MONGO_PASS"),
-		Database: os.Getenv("MONGO_DATABASE"),
-	}
-	instance = mongo.NewDB(&c)
-	queries = mongo.New(instance)
-
-	code := m.Run()
-
-	instance.Disconnect(context.TODO())
-
-	os.Exit(code)
-}
-
 
 
 func TestInsertStockBatch(t *testing.T) {
-	session, err := instance.StartSession()
+	session, err := db.StartSession()
 	if err != nil {
 		t.Errorf("failed to start session: %v", err)
 	}
@@ -72,7 +36,7 @@ func TestInsertStockBatch(t *testing.T) {
 
 func TestFetchAllStockBatch(t *testing.T) {
 
-	session, err := instance.StartSession()
+	session, err := db.StartSession()
 	if err != nil {
 		t.Errorf("failed to start session: %v", err)
 	}

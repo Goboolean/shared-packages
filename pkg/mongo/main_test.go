@@ -9,7 +9,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var db *mongo.DB
+var (
+	db *mongo.DB
+	queries *mongo.Queries
+)
 
 
 
@@ -39,7 +42,7 @@ func SetupMongo() {
 		Database: os.Getenv("MONGO_DATABASE"),
 	}
 	db = mongo.NewDB(&c)
-	queries = mongo.New(instance)
+	queries = mongo.New(db)
 }
 
 func TeardownMongo() {
