@@ -119,9 +119,6 @@ func (s *Subscriber) Ping(ctx context.Context) error {
 	}
 
 	remaining := time.Until(deadline)
-	if remaining < 0 {
-		return fmt.Errorf("timeout")
-	}
 
 	_, err := s.consumer.GetMetadata(nil, true, int(remaining.Milliseconds()))
 	return err

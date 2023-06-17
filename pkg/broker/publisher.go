@@ -59,13 +59,8 @@ func (p *Publisher) Ping(ctx context.Context) error {
 	}
 
 	remaining := time.Until(deadline)
-	if remaining < 0 {
-		return fmt.Errorf("timeout")
-	}
 
-	metaData, err := p.Producer.GetMetadata(nil, true, int(remaining.Milliseconds()))
-
-	fmt.Println(metaData.OriginatingBroker.Host, metaData.OriginatingBroker.Port, metaData.OriginatingBroker.ID)
+	_, err := p.Producer.GetMetadata(nil, true, int(remaining.Milliseconds()))
 	return err
 }
 
