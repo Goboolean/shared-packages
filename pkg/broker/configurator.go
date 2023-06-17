@@ -48,9 +48,13 @@ func NewConfigurator(c *resolver.Config) *Configurator {
 	return instance
 }
 
+
+
 func (c *Configurator) Close() {
 	c.AdminClient.Close()
 }
+
+
 
 func (c *Configurator) Ping(ctx context.Context) error {
 	deadline, ok := ctx.Deadline()
@@ -60,9 +64,6 @@ func (c *Configurator) Ping(ctx context.Context) error {
 	}
 
 	remaining := time.Until(deadline)
-	if remaining < 0 {
-		return fmt.Errorf("timeout")
-	}
 
 	_, err := c.AdminClient.GetMetadata(nil, true, int(remaining.Milliseconds()))
 	return err
@@ -92,6 +93,7 @@ func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 }
 
 
+
 func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
 
 	result, err := c.AdminClient.DeleteTopics(ctx, []string{topic})
@@ -104,6 +106,26 @@ func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
 		return errors.Wrap(fmt.Errorf(err.String()), "trival error while deleting topic")
 	}
 
-
 	return nil
+}
+
+
+
+func (c *Configurator) TopicExists(ctx context.Context, topic string) (bool, error) {
+
+	deadline, ok := ctx.Deadline()
+
+	if !ok {
+		return false, fmt.Errorf("timeout setting on ctx required")
+	}
+
+	remaining := time.Until(deadline)
+
+	metadata, err := c.AdminClient.GetMetadata(nil, true, int(remaining.Milliseconds()))
+	if err != nil {
+		return false, err
+	}
+
+	_, exists := metadata.Topics[topic]
+	return exists, nil
 }

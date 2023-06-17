@@ -10,14 +10,7 @@ import (
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 )
 
-var (
-	topic = "test"
-	conf *broker.Configurator
-)
-
-
-
-
+var conf *broker.Configurator
 
 
 
@@ -35,21 +28,15 @@ func TeardownConfigurator() {
 
 
 func TestConfigurator(t *testing.T) {
-
-	//defer func() {
-	//	if r := recover(); r != nil {
-	//		t.Errorf("Configurator Failed: %v", r)
-	//	}
-	//}()
-
 	SetupConfigurator()
 	TeardownConfigurator()
 }
 
 
 
-func TestCreateDeleteTopic(t *testing.T) {
-
+func TestCreateTopic(t *testing.T) {
+	
+	var topic = "test-topic"
 	SetupConfigurator()
 
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
@@ -58,9 +45,38 @@ func TestCreateDeleteTopic(t *testing.T) {
 	if err := conf.CreateTopic(ctx, topic); err != nil {
 		t.Errorf("CreateTopic() = %v", err)
 	}
+
+	exists, err := conf.TopicExists(ctx, topic)
+	if err != nil {
+		t.Errorf("TopicExists() = %v", err)
+	}
+	if !exists {
+		t.Errorf("TopicExists() = %v, expected = true", exists)
+	}
+	
+	TeardownConfigurator()
+}
+
+
+
+func TestDeleteTopic(t *testing.T) {
+
+	var topic = "test-topic"
+	SetupConfigurator()
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancelFunc()
 	
 	if err := conf.DeleteTopic(ctx, topic); err != nil {
 		t.Errorf("DeleteTopic() = %v", err)
+	}
+
+	exists, err := conf.TopicExists(ctx, topic)
+	if err != nil {
+		t.Errorf("TopicExists() = %v", err)
+	}
+	if exists {
+		t.Errorf("TopicExists() = %v, expected = false", exists)
 	}
 
 	TeardownConfigurator()
