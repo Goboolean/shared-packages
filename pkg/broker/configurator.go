@@ -48,8 +48,8 @@ func NewConfigurator(c *resolver.Config) *Configurator {
 	return instance
 }
 
-func (c *Configurator) Close() error {
-	return c.Close()
+func (c *Configurator) Close() {
+	c.AdminClient.Close()
 }
 
 func (c *Configurator) Ping(ctx context.Context) error {

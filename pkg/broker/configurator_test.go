@@ -43,9 +43,7 @@ func SetupConfigurator() {
 }
 
 func TeardownConfigurator() {
-	if err := conf.Close(); err != nil {
-		panic(err)
-	}
+	conf.Close()
 }
 
 
