@@ -10,7 +10,9 @@ import (
 
 
 
-func (p *Producer) sendSimEvent(event *SimEvent) error {
+func (p *Producer) sendSimEvent(status SimEventStatus, event *SimEvent) error {
+
+	event.Status = int64(status)
 
 	data, err := proto.Marshal(event)
 
@@ -27,7 +29,9 @@ func (p *Producer) sendSimEvent(event *SimEvent) error {
 	return err
 }
 
-func (p *Producer) sendSimRollbackEvent(event *SimEvent) error {
+func (p *Producer) sendSimRollbackEvent(status SimEventStatus, event *SimEvent) error {
+
+	event.Status = int64(status)
 
 	data, err := proto.Marshal(event)
 
@@ -45,56 +49,46 @@ func (p *Producer) sendSimRollbackEvent(event *SimEvent) error {
 }
 
 
-func (p *Producer) SendEvent(status SimEventStatus, event *SimEvent) error {
-	event.Status = int64(status)
-	return p.sendSimEvent(event)
-}
-
-func (p *Producer) SendRollbackEvent(status SimEventStatus, event *SimEvent) error {
-	event.Status = int64(status)
-	return p.sendSimRollbackEvent(event)
-}
-
 
 
 func (p *Producer) SendSimRequestedEvent(event *SimEvent) error {
-	return p.SendEvent(SimEventStatusRequested, event)
+	return p.sendSimEvent(SimEventStatusRequested, event)
 }
 
 func (p *Producer) SendSimRequestedRollbackEvent(event *SimEvent) error {
-	return p.SendRollbackEvent(SimEventStatusRequested, event)
+	return p.sendSimRollbackEvent(SimEventStatusRequested, event)
 }
 
 func (p *Producer) SendSimPendingEvent(event *SimEvent) error {
-	return p.SendEvent(SimEventStatusPending, event)
+	return p.sendSimEvent(SimEventStatusPending, event)
 }
 
 func (p *Producer) SendSimPendingRollbackEvent(event *SimEvent) error {
-	return p.SendRollbackEvent(SimEventStatusPending, event)
+	return p.sendSimRollbackEvent(SimEventStatusPending, event)
 }
 
 func (p *Producer) SendSimAllocatedEvent(event *SimEvent) error {
-	return p.SendEvent(SimEventStatusAllocated, event)
+	return p.sendSimEvent(SimEventStatusAllocated, event)
 }
 
 func (p *Producer) SendSimAllocatedRollbackEvent(event *SimEvent) error {
-	return p.SendRollbackEvent(SimEventStatusAllocated, event)
+	return p.sendSimRollbackEvent(SimEventStatusAllocated, event)
 }
 
 func (p *Producer) SendSimFailedEvent(event *SimEvent) error {
-	return p.SendEvent(SimEventStatusFailed, event)
+	return p.sendSimEvent(SimEventStatusFailed, event)
 }
 
 func (p *Producer) SendSimFailedRollbackEvent(event *SimEvent) error {
-	return p.SendRollbackEvent(SimEventStatusFailed, event)
+	return p.sendSimRollbackEvent(SimEventStatusFailed, event)
 }
 
 func (p *Producer) SendSimFinishedEvent(event *SimEvent) error {
-	return p.SendEvent(SimEventStatusFinished, event)
+	return p.sendSimEvent(SimEventStatusFinished, event)
 }
 
 func (p *Producer) SendSimFinishedRollbackEvent(event *SimEvent) error {
-	return p.SendRollbackEvent(SimEventStatusFinished, event)
+	return p.sendSimRollbackEvent(SimEventStatusFinished, event)
 }
 
 
