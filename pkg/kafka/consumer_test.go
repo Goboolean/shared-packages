@@ -1,7 +1,6 @@
 package kafka_test
 
 import (
-	"context"
 	"os"
 	"testing"
 
@@ -12,17 +11,12 @@ import (
 
 
 
-
-
-
-
-
 func TestConsumer(t *testing.T) {
 
 	sub := kafka.NewConsumer(&resolver.Config{
 		Host: os.Getenv("KAFKA_HOST"),
 		Port: os.Getenv("KAFKA_PORT"),
-	}, context.TODO())
+	})
 
 	if err := sub.Close(); err != nil {
 		t.Errorf("NewConsumer() failed: %v", err)

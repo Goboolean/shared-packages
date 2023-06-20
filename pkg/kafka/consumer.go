@@ -1,7 +1,6 @@
 package kafka
 
 import (
-	"context"
 	"fmt"
 	"log"
 
@@ -13,12 +12,13 @@ import (
 
 type Consumer struct {
 	consumer sarama.Consumer
-	ctx context.Context
+
+	data map[string]chan interface{}
 }
 
 
 
-func NewConsumer(c *resolver.Config, ctx context.Context) *Consumer {
+func NewConsumer(c *resolver.Config) *Consumer {
 	
 	if err := c.ShouldHostExist(); err != nil {
 		panic(err)
@@ -42,9 +42,7 @@ func NewConsumer(c *resolver.Config, ctx context.Context) *Consumer {
 
 	return &Consumer{
 		consumer: consumer,
-		ctx: ctx,
 	}
-
 }
 
 
