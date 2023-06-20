@@ -13,19 +13,19 @@ const (
 )
 
 var SimEventTopic = map[SimEventStatus]string{
-	SimEventStatusRequested: "sim_requested",
-	SimEventStatusPending:   "sim_pending",
-	SimEventStatusAllocated: "sim_allocated",
-	SimEventStatusFailed:    "sim_failed",
-	SimEventStatusFinished:  "sim_finished",
+	SimEventStatusRequested: "sim.requested",
+	SimEventStatusPending:   "sim.pending",
+	SimEventStatusAllocated: "sim.allocated",
+	SimEventStatusFailed:    "sim.failed",
+	SimEventStatusFinished:  "sim.finished",
 }
 
 var SimEventRollbackTopic = map[SimEventStatus]string{
-	SimEventStatusRequested: "sim_requested_rollback",
-	SimEventStatusPending:   "sim_pending_rollback",
-	SimEventStatusAllocated: "sim_allocated_rollback",
-	SimEventStatusFailed:    "sim_failed_rollback",
-	SimEventStatusFinished:  "sim_finished_rollback",
+	SimEventStatusRequested: "sim.requested_rollback",
+	SimEventStatusPending:   "sim.pending_rollback",
+	SimEventStatusAllocated: "sim.allocated_rollback",
+	SimEventStatusFailed:    "sim.failed_rollback",
+	SimEventStatusFinished:  "sim.finished_rollback",
 }
 
 
@@ -43,23 +43,19 @@ const (
 )
 
 var ValEventTopic = map[ValEventStatus]string{
-	ValEventStatusRequested:   "val_requested",
-	ValEventStatusPending:     "val_pending",
-	ValEventStatusAllocated:   "val_allocated",
-	ValEventStatusValidated:   "val_validated",
-	ValEventStatusInvalidated: "val_invalidated",
-	ValEventStatusFailed:      "val_failed",
-	ValEventStatusFinished:    "val_finished",
+	ValEventStatusRequested:   "val.requested",
+	ValEventStatusPending:     "val.pending",
+	ValEventStatusAllocated:   "val.allocated",
+	ValEventStatusFailed:      "val.failed",
+	ValEventStatusFinished:    "val.finished",
 }
 
 var ValEventRollbackTopic = map[ValEventStatus]string{
-	ValEventStatusRequested:   "val_requested_rollback",
-	ValEventStatusPending:     "val_pending_rollback",
-	ValEventStatusAllocated:   "val_allocated_rollback",
-	ValEventStatusValidated:   "val_validated_rollback",
-	ValEventStatusInvalidated: "val_invalidated_rollback",
-	ValEventStatusFailed:      "val_failed_rollback",
-	ValEventStatusFinished:    "val_finished_rollback",
+	ValEventStatusRequested:   "val.requested_rollback",
+	ValEventStatusPending:     "val.pending_rollback",
+	ValEventStatusAllocated:   "val.allocated_rollback",
+	ValEventStatusFailed:      "val.failed_rollback",
+	ValEventStatusFinished:    "val.finished_rollback",
 }
 
 
@@ -73,13 +69,13 @@ const (
 )
 
 var RealEventTopic = map[RealEventStatus]string{
-	RealEventStatusRequested: "real_requested",
-	RealEventStatusPending:   "real_pending",
-	RealEventStatusAllocated: "real_allocated",
+	RealEventStatusRequested: "real.requested",
+	RealEventStatusPending:   "real.pending",
+	RealEventStatusAllocated: "real.allocated",
 }
 
 var RealEventRollbackTopic = map[RealEventStatus]string{
-	RealEventStatusRequested: "real_requested_rollback",
-	RealEventStatusPending:   "real_pending_rollback",
-	RealEventStatusAllocated: "real_allocated_rollback",
+	RealEventStatusRequested: "real.requested_rollback",
+	RealEventStatusPending:   "real.pending_rollback",
+	RealEventStatusAllocated: "real.allocated_rollback",
 }
