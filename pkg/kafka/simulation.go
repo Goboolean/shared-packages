@@ -45,62 +45,63 @@ func (p *Producer) sendSimRollbackEvent(event *SimEvent) error {
 }
 
 
+func (p *Producer) SendEvent(status SimEventStatus, event *SimEvent) error {
+	event.Status = int64(status)
+	return p.sendSimEvent(event)
+}
+
+func (p *Producer) SendRollbackEvent(status SimEventStatus, event *SimEvent) error {
+	event.Status = int64(status)
+	return p.sendSimRollbackEvent(event)
+}
+
+
 
 func (p *Producer) SendSimRequestedEvent(event *SimEvent) error {
-	event.Status = int64(SimEventStatusRequested)
-	return p.sendSimEvent(event)
+	return p.SendEvent(SimEventStatusRequested, event)
 }
 
 func (p *Producer) SendSimRequestedRollbackEvent(event *SimEvent) error {
-	event.Status = int64(SimEventStatusRequested)
-	return p.sendSimRollbackEvent(event)
+	return p.SendRollbackEvent(SimEventStatusRequested, event)
 }
 
 func (p *Producer) SendSimPendingEvent(event *SimEvent) error {
-	event.Status = int64(SimEventStatusPending)
-	return p.sendSimEvent(event)
+	return p.SendEvent(SimEventStatusPending, event)
 }
 
 func (p *Producer) SendSimPendingRollbackEvent(event *SimEvent) error {
-	event.Status = int64(SimEventStatusPending)
-	return p.sendSimRollbackEvent(event)
+	return p.SendRollbackEvent(SimEventStatusPending, event)
 }
 
 func (p *Producer) SendSimAllocatedEvent(event *SimEvent) error {
-	event.Status = int64(SimEventStatusAllocated)
-	return p.sendSimEvent(event)
+	return p.SendEvent(SimEventStatusAllocated, event)
 }
 
 func (p *Producer) SendSimAllocatedRollbackEvent(event *SimEvent) error {
-	event.Status = int64(SimEventStatusAllocated)
-	return p.sendSimRollbackEvent(event)
+	return p.SendRollbackEvent(SimEventStatusAllocated, event)
 }
 
 func (p *Producer) SendSimFailedEvent(event *SimEvent) error {
-	event.Status = int64(SimEventStatusFailed)
-	return p.sendSimEvent(event)
+	return p.SendEvent(SimEventStatusFailed, event)
 }
 
 func (p *Producer) SendSimFailedRollbackEvent(event *SimEvent) error {
-	event.Status = int64(SimEventStatusFailed)
-	return p.sendSimRollbackEvent(event)
+	return p.SendRollbackEvent(SimEventStatusFailed, event)
 }
 
 func (p *Producer) SendSimFinishedEvent(event *SimEvent) error {
-	event.Status = int64(SimEventStatusFinished)
-	return p.sendSimEvent(event)
+	return p.SendEvent(SimEventStatusFinished, event)
 }
 
 func (p *Producer) SendSimFinishedRollbackEvent(event *SimEvent) error {
-	event.Status = int64(SimEventStatusFinished)
-	return p.sendSimRollbackEvent(event)
+	return p.SendRollbackEvent(SimEventStatusFinished, event)
 }
 
 
 
-func (c *Consumer) subscribeSimEvent(status SimEventStatus, callback func(*SimEvent)) error {
+func (c *Consumer) subscribeSimEvent(ctx context.Context, topic string, callback func(*SimEvent)) error {
 	
-	pc, err := c.consumer.ConsumePartition(SimEventTopic[status], 0, sarama.OffsetOldest)
+	pc, err := c.consumer.ConsumePartition(topic, 0, sarama.OffsetOldest)
 	if err != nil {
 		return err
 	}
@@ -120,124 +121,115 @@ func (c *Consumer) subscribeSimEvent(status SimEventStatus, callback func(*SimEv
 
 			for message := range pc.Messages() {
 
-				var event *SimEvent
-	
+				var event *SimEvent	
 				proto.Unmarshal(message.Value, event)
 
 				callback(event)
 			}
 		}
-	}(c.ctx)
+	}(ctx)
 
 	return nil
 }
 
 
 
-func (c *Consumer) subscribeSimRollbackEvent(status SimEventStatus, callback func(*SimEvent)) error {
-	
-	pc, err := c.consumer.ConsumePartition(SimEventRollbackTopic[status], 0, sarama.OffsetOldest)
-	if err != nil {
-		return err
-	}
-
-	go func(ctx context.Context) {
-
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-			}
-
-			for err := range pc.Errors() {
-				log.Fatal(err)
-			}
-
-			for message := range pc.Messages() {
-
-				var event *SimEvent
-	
-				proto.Unmarshal(message.Value, event)
-
-				callback(event)
-			}
-		}
-	}(c.ctx)
-
-	return nil
+type SimRequestedEventListener interface {
+	OnRecieveSimRequestedEvent(*SimEvent)
+	OnRecieveSimRequestedRollbackEvent(*SimEvent)
 }
 
-
-
-type SimEventListener interface {
-	OnReceiveAllSimEvent(*SimEvent)
-	OnReceiveAllSimRollbackEvent(*SimEvent)
-}
-
-func (c *Consumer) SubscribeSimRequestedEvent(impl SimEventListener) error {
-	if err := c.subscribeSimEvent(SimEventStatusRequested, func(event *SimEvent) {
-		impl.OnReceiveAllSimEvent(event)
+func (c *Consumer) SubscribeSimRequestedEvent(ctx context.Context, impl SimRequestedEventListener) {
+	if err := c.subscribeSimEvent(ctx, SimEventTopic[SimEventStatusRequested], func(event *SimEvent) {
+		impl.OnRecieveSimRequestedEvent(event)
 	}); err != nil {
-		return err
+		panic(err)
 	}
 
-	if err := c.subscribeSimRollbackEvent(SimEventStatusRequested, func(event *SimEvent) {
-		impl.OnReceiveAllSimRollbackEvent(event)
+	if err := c.subscribeSimEvent(ctx, SimEventRollbackTopic[SimEventStatusRequested], func(event *SimEvent) {
+		impl.OnRecieveSimRequestedRollbackEvent(event)
 	}); err != nil {
-		return err
+		panic(err)
+	}
+}
+
+
+
+type SimPendingEventListener interface {
+	OnRecieveSimPendingEvent(*SimEvent)
+	OnRecieveSimPendingRollbackEvent(*SimEvent)
+}
+
+func (c *Consumer) SubscribeSimPendingEvent(ctx context.Context, impl SimPendingEventListener) {
+	if err := c.subscribeSimEvent(ctx, SimEventTopic[SimEventStatusRequested], func(event *SimEvent) {
+		impl.OnRecieveSimPendingEvent(event)
+	}); err != nil {
+		panic(err)
 	}
 
-	return nil
+	if err := c.subscribeSimEvent(ctx, SimEventRollbackTopic[SimEventStatusRequested], func(event *SimEvent) {
+		impl.OnRecieveSimPendingRollbackEvent(event)
+	}); err != nil {
+		panic(err)
+	}
 }
 
 
-
-
-
-func (c *Consumer) SubscribeSimAllocatedEvent(impl SimEventListener) error {
-	return c.subscribeSimEvent(SimEventStatusAllocated, func(event *SimEvent) {
-		impl.OnReceiveAllSimEvent(event)
-	})
+type SimAllocatedEventListener interface {
+	OnRecieveSimAllocatedEvent(*SimEvent)
+	OnRecieveSimAllocatedRollbackEvent(*SimEvent)
 }
 
-func (c *Consumer) SubscribeSimPendingEvent(impl SimEventListener) error {
-	return c.subscribeSimEvent(SimEventStatusPending, func(event *SimEvent) {
-		impl.OnReceiveAllSimEvent(event)
-	})
-}
-
-
-func (c *Consumer) SubscribeSimRollbackEvent(impl SimEventListener) error {
-
-	pc, err := c.consumer.ConsumePartition(simRollbackEventTopicName, 0, sarama.OffsetOldest)
-	if err != nil {
-		return err
+func (c *Consumer) SubscribeSimAllocatedEvent(ctx context.Context, impl SimAllocatedEventListener) {
+	if err := c.subscribeSimEvent(ctx, SimEventTopic[SimEventStatusRequested], func(event *SimEvent) {
+		impl.OnRecieveSimAllocatedEvent(event)
+	}); err != nil {
+		panic(err)
 	}
 
-	go func(ctx context.Context) {
+	if err := c.subscribeSimEvent(ctx, SimEventRollbackTopic[SimEventStatusRequested], func(event *SimEvent) {
+		impl.OnRecieveSimAllocatedRollbackEvent(event)
+	}); err != nil {
+		panic(err)
+	}
+}
 
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			default:
-			}
 
-			for err := range pc.Errors() {
-				log.Fatal(err)
-			}
+type SimFailedEventListener interface {
+	OnRecieveSimFailedEvent(*SimEvent)
+	OnRecieveSimFailedRollbackEvent(*SimEvent)
+}
 
-			for message := range pc.Messages() {
+func (c *Consumer) SubscribeSimFailedEvent(ctx context.Context, impl SimFailedEventListener) {
+	if err := c.subscribeSimEvent(ctx, SimEventTopic[SimEventStatusRequested], func(event *SimEvent) {
+		impl.OnRecieveSimFailedEvent(event)
+	}); err != nil {
+		panic(err)
+	}
 
-				var event *SimEvent
-	
-				proto.Unmarshal(message.Value, event)
-	
-				impl.OnReceiveAllSimRollbackEvent(event)
-			}
-		}
-	}(c.ctx)
+	if err := c.subscribeSimEvent(ctx, SimEventRollbackTopic[SimEventStatusRequested], func(event *SimEvent) {
+		impl.OnRecieveSimFailedRollbackEvent(event)
+	}); err != nil {
+		panic(err)
+	}
+}
 
-	return nil
+
+type SimFinishedEventListener interface {
+	OnRecieveSimFinishedEvent(*SimEvent)
+	OnRecieveSimFinishedRollbackEvent(*SimEvent)
+}
+
+func (c *Consumer) SubscribeSimFinishedEvent(ctx context.Context, impl SimFinishedEventListener) {
+	if err := c.subscribeSimEvent(ctx, SimEventTopic[SimEventStatusRequested], func(event *SimEvent) {
+		impl.OnRecieveSimFinishedEvent(event)
+	}); err != nil {
+		panic(err)
+	}
+
+	if err := c.subscribeSimEvent(ctx, SimEventRollbackTopic[SimEventStatusRequested], func(event *SimEvent) {
+		impl.OnRecieveSimFinishedRollbackEvent(event)
+	}); err != nil {
+		panic(err)
+	}
 }
