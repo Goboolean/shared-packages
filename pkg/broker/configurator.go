@@ -142,9 +142,6 @@ func (c *Configurator) TopicExists(ctx context.Context, topic string) (bool, err
 	}
 
 	_, exists := metadata.Topics[topic]
-	for topicName := range metadata.Topics {
-		fmt.Println(topicName)
-	}
 	return exists, nil
 }
 

@@ -3,12 +3,12 @@ package broker_test
 import (
 	"context"
 	"os"
-	"reflect"
 	"testing"
 	"time"
 
 	"github.com/Goboolean/shared-packages/pkg/broker"
 	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"google.golang.org/protobuf/proto"
 )
 
 
@@ -116,7 +116,7 @@ func TestSubscribe(t *testing.T) {
 			case <-ctx.Done():
 				t.Errorf("timeout: failed to receive data")
 			case got := <- stockChan:
-				if !reflect.DeepEqual(got, tt.want) {
+				if !proto.Equal(got, tt.want) {
 					t.Errorf("OnReceiveStockAggs() = %v, want %v", got, tt.want)
 				}
 			}
