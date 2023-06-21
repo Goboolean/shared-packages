@@ -36,16 +36,7 @@ func NewConfigurator(c *resolver.Config) *Configurator {
 		panic(err)
 	}
 
-	instance := &Configurator{AdminClient: admin}
-
-	ctx, cancelFunc := context.WithTimeout(context.Background(), defaultTimeout)
-	defer cancelFunc()
-
-	if err := instance.Ping(ctx); err != nil {
-		panic(err)
-	}
-
-	return instance
+	return &Configurator{AdminClient: admin}
 }
 
 

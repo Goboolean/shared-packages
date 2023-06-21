@@ -66,13 +66,6 @@ func NewSubscriber(c *resolver.Config, ctx context.Context, lis SubscribeListene
 		ctx: ctx,
 	}
 
-	pingCtx, cancelFunc := context.WithTimeout(ctx, defaultTimeout)
-	defer cancelFunc()
-
-	if err := instance.Ping(pingCtx); err != nil {
-		panic(err)
-	}
-
 	go instance.subscribeMessage(ctx)
 
 	return instance

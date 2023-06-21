@@ -11,6 +11,11 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+
+
+// produce.Flush should be finished within this time
+var defaultFlushTimeout = time.Second * 3
+
 type Publisher struct {
 	producer *kafka.Producer
 }
@@ -88,7 +93,7 @@ func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 		return err
 	}
 
-	if remain := p.producer.Flush(int(defaultTimeout.Milliseconds())); remain != 0 {
+	if remain := p.producer.Flush(int(defaultFlushTimeout.Milliseconds())); remain != 0 {
 		return fmt.Errorf("%d events is stil remaining: ", remain)
 	}
 
@@ -103,28 +108,22 @@ func (p *Publisher) SendDataBatch(topic string, batch []*StockAggregate) error {
 
 	msgChan := p.producer.ProduceChannel()
 
-	binaryBatch := make([][]byte, len(batch))
+	topic = packTopic(topic)
 
 	for idx := range batch {
-		data, err := proto.Marshal(batch[idx])
+		binaryData, err := proto.Marshal(batch[idx])
 
 		if err != nil {
 			return err
 		}
 
-		binaryBatch[idx] = data
-	}
-
-	topic = packTopic(topic)
-
-	for idx := range batch {
 		msgChan <- &kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-			Value:          binaryBatch[idx],
+			Value:          binaryData,
 		}
 	}
 
-	if remain := p.producer.Flush(int(defaultTimeout.Milliseconds())); remain != 0 {
+	if remain := p.producer.Flush(int(defaultFlushTimeout.Milliseconds())); remain != 0 {
 		return fmt.Errorf("%d events is stil remaining: ", remain)
 	}
 
