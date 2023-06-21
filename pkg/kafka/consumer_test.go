@@ -8,17 +8,23 @@ import (
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 )
 
+var sub *kafka.Consumer
 
-
-
-func TestConsumer(t *testing.T) {
-
-	sub := kafka.NewConsumer(&resolver.Config{
+func SetupConsumer() {
+	sub = kafka.NewConsumer(&resolver.Config{
 		Host: os.Getenv("KAFKA_HOST"),
 		Port: os.Getenv("KAFKA_PORT"),
 	})
+}
 
+func TeardownConsumer() {
 	if err := sub.Close(); err != nil {
-		t.Errorf("NewConsumer() failed: %v", err)
+		panic(err)
 	}
+}
+
+
+func TestConsumer(t *testing.T) {
+	SetupConsumer()
+	TeardownConsumer()
 }

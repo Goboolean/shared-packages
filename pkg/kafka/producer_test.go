@@ -8,15 +8,23 @@ import (
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 )
 
+var pub *kafka.Producer
 
-func TestProducer(t *testing.T) {
-
-	pub := kafka.NewProducer(&resolver.Config{
+func SetupProducer() {
+	pub = kafka.NewProducer(&resolver.Config{
 		Host: os.Getenv("KAFKA_HOST"),
 		Port: os.Getenv("KAFKA_PORT"),
 	})
+}
 
+func TeardownProducer() {
 	if err := pub.Close(); err != nil {
-		t.Errorf("NewPublisher() failed: %v", err)
+		panic(err)
 	}
+}
+
+
+func TestProducer(t *testing.T) {
+	SetupProducer()
+	TeardownProducer()
 }
