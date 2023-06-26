@@ -1,11 +1,11 @@
-proto-stock-generate:
+protobuf-stock-generate:
 	protoc \
 		-I api/proto \
 		--go_out=pkg/broker \
 		--go_opt=paths=source_relative \
 		stockaggs.proto
 
-proto-event-generate:
+protobuf-event-generate:
 	protoc \
 		-I api/proto \
 		--go_out=pkg/kafka \
