@@ -8,10 +8,16 @@ import (
 
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"google.golang.org/protobuf/proto"
 )
 
+
+
+// produce.Flush should be finished within this time
+var defaultFlushTimeout = time.Second * 3
+
 type Publisher struct {
-	*kafka.Producer
+	producer *kafka.Producer
 }
 
 
@@ -30,6 +36,8 @@ func NewPublisher(c *resolver.Config) *Publisher {
 
 	config := &kafka.ConfigMap{
 		"bootstrap.servers": c.Address,
+		"acks": 0,
+		"go.delivery.reports": false,
 	}
 
 	producer, err := kafka.NewProducer(config)
@@ -38,23 +46,16 @@ func NewPublisher(c *resolver.Config) *Publisher {
 		return nil
 	}
 
-	instance := &Publisher{Producer: producer}
+	producer.Events()
+	producer.ProduceChannel()
 
-	ctx, cancelFunc := context.WithTimeout(context.Background(), defaultTimeout)
-	defer cancelFunc()
-
-	if err := instance.Ping(ctx); err != nil {
-		panic(err)
-	}
-
-	return instance
+	return &Publisher{producer: producer}
 }
 
 
 
-func (p *Publisher) Close() error {
-	p.Producer.Close()
-	return nil
+func (p *Publisher) Close() {
+	p.producer.Close()
 }
 
 
@@ -67,12 +68,64 @@ func (p *Publisher) Ping(ctx context.Context) error {
 	}
 
 	remaining := time.Until(deadline)
-	if remaining < 0 {
-		return fmt.Errorf("timeout")
+
+	_, err := p.producer.GetMetadata(nil, true, int(remaining.Milliseconds()))
+	return err
+}
+
+
+
+
+func (p *Publisher) SendData(topic string, data *StockAggregate) error {
+
+	topic = packTopic(topic)
+
+	binaryData, err := proto.Marshal(data)
+
+	if err != nil {
+		return err
 	}
 
-	metaData, err := p.Producer.GetMetadata(nil, true, int(remaining.Milliseconds()))
+	if err := p.producer.Produce(&kafka.Message{
+		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+		Value:          binaryData,
+	}, nil); err != nil {
+		return err
+	}
 
-	fmt.Println(metaData.OriginatingBroker.Host, metaData.OriginatingBroker.Port, metaData.OriginatingBroker.ID)
-	return err
+	if remain := p.producer.Flush(int(defaultFlushTimeout.Milliseconds())); remain != 0 {
+		return fmt.Errorf("%d events is stil remaining: ", remain)
+	}
+
+	return nil
+}
+
+
+
+func (p *Publisher) SendDataBatch(topic string, batch []*StockAggregate) error {
+
+	topic = packTopic(topic)
+
+	msgChan := p.producer.ProduceChannel()
+
+	topic = packTopic(topic)
+
+	for idx := range batch {
+		binaryData, err := proto.Marshal(batch[idx])
+
+		if err != nil {
+			return err
+		}
+
+		msgChan <- &kafka.Message{
+			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+			Value:          binaryData,
+		}
+	}
+
+	if remain := p.producer.Flush(int(defaultFlushTimeout.Milliseconds())); remain != 0 {
+		return fmt.Errorf("%d events is stil remaining: ", remain)
+	}
+
+	return nil
 }

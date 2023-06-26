@@ -7,6 +7,7 @@ import (
 
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/pkg/errors"
 )
 
 type Configurator struct {
@@ -35,21 +36,16 @@ func NewConfigurator(c *resolver.Config) *Configurator {
 		panic(err)
 	}
 
-	instance := &Configurator{AdminClient: admin}
-
-	ctx, cancelFunc := context.WithTimeout(context.Background(), defaultTimeout)
-	defer cancelFunc()
-
-	if err := instance.Ping(ctx); err != nil {
-		panic(err)
-	}
-
-	return instance
+	return &Configurator{AdminClient: admin}
 }
 
-func (c *Configurator) Close() error {
-	return c.Close()
+
+
+func (c *Configurator) Close() {
+	c.AdminClient.Close()
 }
+
+
 
 func (c *Configurator) Ping(ctx context.Context) error {
 	deadline, ok := ctx.Deadline()
@@ -59,10 +55,112 @@ func (c *Configurator) Ping(ctx context.Context) error {
 	}
 
 	remaining := time.Until(deadline)
-	if remaining < 0 {
-		return fmt.Errorf("timeout")
-	}
 
 	_, err := c.AdminClient.GetMetadata(nil, true, int(remaining.Milliseconds()))
 	return err
+}
+
+
+
+func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
+
+	topic = packTopic(topic)
+
+	exists, err := c.TopicExists(ctx, topic)
+	if err != nil {
+		return err
+	}
+
+	if exists {
+		return nil
+	}
+
+	topicInfo := kafka.TopicSpecification{
+		Topic: topic,
+		NumPartitions: 1,
+		ReplicationFactor: 1,
+	}
+
+	result, err := c.AdminClient.CreateTopics(ctx, []kafka.TopicSpecification{topicInfo})
+
+	if err != nil {
+		return err
+	}
+	
+	if err := result[0].Error; err.Code() != kafka.ErrNoError {
+		return fmt.Errorf(err.String())
+	}
+
+	return nil
+}
+
+
+
+func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
+
+	topic = packTopic(topic)
+
+	result, err := c.AdminClient.DeleteTopics(ctx, []string{topic})
+
+	if err != nil {
+		return errors.Wrap(err, "fatal error while deleting topic")
+	}
+	
+	if err := result[0].Error; err.Code() != kafka.ErrNoError {
+		return errors.Wrap(fmt.Errorf(err.String()), "trival error while deleting topic")
+	}
+
+	return nil
+}
+
+
+
+func (c *Configurator) TopicExists(ctx context.Context, topic string) (bool, error) {
+
+	topic = packTopic(topic)
+
+	deadline, ok := ctx.Deadline()
+
+	if !ok {
+		return false, fmt.Errorf("timeout setting on ctx required")
+	}
+
+	remaining := time.Until(deadline)
+
+	metadata, err := c.AdminClient.GetMetadata(nil, true, int(remaining.Milliseconds()))
+	if err != nil {
+		return false, err
+	}
+
+	_, exists := metadata.Topics[topic]
+	return exists, nil
+}
+
+
+
+func (c *Configurator) GetTopicList(ctx context.Context) ([]string, error) {
+
+	deadline, ok := ctx.Deadline()
+
+	if !ok {
+		return nil, fmt.Errorf("timeout setting on ctx required")
+	}
+
+	remaining := time.Until(deadline)
+
+	metadata, err := c.AdminClient.GetMetadata(nil, true, int(remaining.Milliseconds()))
+	if err != nil {
+		return nil, err
+	}
+
+	for topicName := range metadata.Topics {
+		fmt.Println(topicName)
+	}
+	topicList := make([]string, len(metadata.Topics))
+
+	for topic := range metadata.Topics {
+		topicList = append(topicList, topic)
+	}
+
+	return topicList, nil
 }
