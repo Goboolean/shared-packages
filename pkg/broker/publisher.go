@@ -36,8 +36,8 @@ func NewPublisher(c *resolver.Config) *Publisher {
 
 	config := &kafka.ConfigMap{
 		"bootstrap.servers": c.Address,
-		"acks": 0,
-		"go.delivery.reports": false,
+		"acks": 0, // 0 if no response is required, 1 if only leader response is required, -1 if all in-sync replicas' response is required
+		"go.delivery.reports": true, // Delivery reports (on delivery success/failure) will be sent on the Producer.Events() channel
 	}
 
 	producer, err := kafka.NewProducer(config)
@@ -46,21 +46,21 @@ func NewPublisher(c *resolver.Config) *Publisher {
 		return nil
 	}
 
-	producer.Events()
-	producer.ProduceChannel()
-
 	return &Publisher{producer: producer}
 }
 
 
-
+// It should be called before program ends to free memory
 func (p *Publisher) Close() {
 	p.producer.Close()
 }
 
 
-
+// Check if connection to kafka is alive
 func (p *Publisher) Ping(ctx context.Context) error {
+
+	// It requires ctx to be deadline set, otherwise it will return error
+	// It will return error if there is no response within deadline
 	deadline, ok := ctx.Deadline()
 
 	if !ok {
@@ -87,11 +87,23 @@ func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 	}
 
 	if err := p.producer.Produce(&kafka.Message{
-		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
+		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny}, // Send data to every partition
 		Value:          binaryData,
 	}, nil); err != nil {
 		return err
 	}
+
+	go func() {
+		for e := range p.producer.Events() {
+			switch ev := e.(type) {
+			case *kafka.Message:
+				if ev.TopicPartition.Error != nil {
+					log.Fatalf("Delivery failed: %v\n", ev.TopicPartition.Error)
+					log.Fatalf("binary data: %v\n", ev.Value)
+				}
+			}
+		}
+	}()
 
 	if remain := p.producer.Flush(int(defaultFlushTimeout.Milliseconds())); remain != 0 {
 		return fmt.Errorf("%d events is stil remaining: ", remain)
@@ -122,6 +134,18 @@ func (p *Publisher) SendDataBatch(topic string, batch []*StockAggregate) error {
 			Value:          binaryData,
 		}
 	}
+
+	go func() {
+		for e := range p.producer.Events() {
+			switch ev := e.(type) {
+			case *kafka.Message:
+				if ev.TopicPartition.Error != nil {
+					log.Fatalf("Delivery failed: %v\n", ev.TopicPartition.Error)
+					log.Fatalf("binary data: %v\n", ev.Value)
+				}
+			}
+		}
+	}()
 
 	if remain := p.producer.Flush(int(defaultFlushTimeout.Milliseconds())); remain != 0 {
 		return fmt.Errorf("%d events is stil remaining: ", remain)
