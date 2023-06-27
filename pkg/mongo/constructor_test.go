@@ -1,0 +1,62 @@
+package mongo_test
+
+import (
+	"os"
+	"testing"
+
+	"github.com/Goboolean/shared-packages/pkg/mongo"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/joho/godotenv"
+)
+
+// Primary test for mongoDB should contain the following:
+// 1. Test if server is running (ping test)
+// 2. Test insertion without transaction
+// 3. Test insertion with transaction
+
+
+
+var (
+	instance *mongo.DB
+	queries *mongo.Queries
+)
+
+func SetupMongo() {
+	instance = mongo.NewDB(&resolver.Config{
+		Host:     os.Getenv("MONGO_HOST"),
+		User:     os.Getenv("MONGO_USER"),
+		Port:     os.Getenv("MONGO_PORT"),
+		Password: os.Getenv("MONGO_PASS"),
+		Database: os.Getenv("MONGO_DATABASE"),
+	})
+	queries = mongo.New(instance)
+}
+
+
+func TeardownMongo() {
+	instance.Close()
+}
+
+func TestMain(m *testing.M) {
+
+	if err := os.Chdir("../../"); err != nil {
+		panic(err)
+	}
+
+	if err := godotenv.Load(); err != nil {
+		panic(err)
+	}
+
+	SetupMongo()
+	code := m.Run()
+	TeardownMongo()
+
+	os.Exit(code)
+}
+
+
+func TestConstructor(t *testing.T) {
+	if err := instance.Ping(); err != nil {
+		t.Errorf("Ping() failed: %v", err)
+	}
+}

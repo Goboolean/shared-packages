@@ -54,12 +54,12 @@ func NewDB(c *resolver.Config) *DB {
 	}
 }
 
-func (db *DB) NewTx() (resolver.Transactioner, error) {
+func (db *DB) NewTx(ctx context.Context) (resolver.Transactioner, error) {
 	session, err := db.client.StartSession()
 	if err != nil {
 		return nil, err
 	}
-	return NewTransaction(session, context.Background()), nil
+	return NewTransaction(session, ctx), nil
 }
 
 func (db *DB) Close() error {
