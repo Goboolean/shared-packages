@@ -71,6 +71,7 @@ func (c *Configurator) Ping(ctx context.Context) error {
 // Create a topic
 func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 
+	// It returns error when topic already exists
 	topic = packTopic(topic)
 
 	exists, err := c.TopicExists(ctx, topic)
@@ -105,6 +106,7 @@ func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 // Delete a topic
 func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
 
+	// It returns error when topic does not exist
 	topic = packTopic(topic)
 
 	result, err := c.AdminClient.DeleteTopics(ctx, []string{topic})
@@ -144,7 +146,7 @@ func (c *Configurator) TopicExists(ctx context.Context, topic string) (bool, err
 }
 
 
-// Get existing topic list
+// Get all existing topic list as a string slice
 func (c *Configurator) GetTopicList(ctx context.Context) ([]string, error) {
 
 	deadline, ok := ctx.Deadline()
