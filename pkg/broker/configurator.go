@@ -10,6 +10,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+
+
+// Configurator has a role for making and deleting topic, checking topic exists, and getting topic list.
 type Configurator struct {
 	AdminClient *kafka.AdminClient
 }
@@ -28,6 +31,7 @@ func NewConfigurator(c *resolver.Config) *Configurator {
 
 	config := &kafka.ConfigMap{
 		"bootstrap.servers": c.Address,
+		"debug": "security, broker",
 	}
 
 	admin, err := kafka.NewAdminClient(config)
@@ -40,14 +44,17 @@ func NewConfigurator(c *resolver.Config) *Configurator {
 }
 
 
-
+// It should be called before program ends to free memory
 func (c *Configurator) Close() {
 	c.AdminClient.Close()
 }
 
 
-
+// Check if connection to kafka is alive
 func (c *Configurator) Ping(ctx context.Context) error {
+
+	// It requires ctx to be deadline set, otherwise it will return error
+	// It will return error if there is no response within deadline
 	deadline, ok := ctx.Deadline()
 
 	if !ok {
@@ -61,9 +68,10 @@ func (c *Configurator) Ping(ctx context.Context) error {
 }
 
 
-
+// Create a topic
 func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 
+	// It returns error when topic already exists
 	topic = packTopic(topic)
 
 	exists, err := c.TopicExists(ctx, topic)
@@ -95,9 +103,10 @@ func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 }
 
 
-
+// Delete a topic
 func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
 
+	// It returns error when topic does not exist
 	topic = packTopic(topic)
 
 	result, err := c.AdminClient.DeleteTopics(ctx, []string{topic})
@@ -114,7 +123,7 @@ func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
 }
 
 
-
+// Check if given topic exists
 func (c *Configurator) TopicExists(ctx context.Context, topic string) (bool, error) {
 
 	topic = packTopic(topic)
@@ -137,7 +146,7 @@ func (c *Configurator) TopicExists(ctx context.Context, topic string) (bool, err
 }
 
 
-
+// Get all existing topic list as a string slice
 func (c *Configurator) GetTopicList(ctx context.Context) ([]string, error) {
 
 	deadline, ok := ctx.Deadline()
@@ -153,9 +162,6 @@ func (c *Configurator) GetTopicList(ctx context.Context) ([]string, error) {
 		return nil, err
 	}
 
-	for topicName := range metadata.Topics {
-		fmt.Println(topicName)
-	}
 	topicList := make([]string, len(metadata.Topics))
 
 	for topic := range metadata.Topics {

@@ -32,7 +32,7 @@ func TeardownSubscriber() {
 
 
 
-func TestSubscriber(t *testing.T) {
+func Test_Subscriber(t *testing.T) {
 
 	SetupSubscriber()
 
@@ -58,7 +58,7 @@ func (i *SubscribeListenerImpl) OnReceiveStockAggs(name string, data *broker.Sto
 }
 
 
-func TestSubscribe(t *testing.T) {
+func Test_Subscribe(t *testing.T) {
 
 	var topic = "test-topic"
 	SetupSubscriber()
