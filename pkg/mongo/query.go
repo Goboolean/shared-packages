@@ -7,19 +7,19 @@ import (
 )
 
 type Queries struct {
-	client *DB
+	db *DB
 	tx *mongo.Session
 }
 
 func New(db *DB) *Queries {
-	return &Queries{client: db}
+	return &Queries{db: db}
 }
 
 
 
 func (q *Queries) InsertStockBatch(tx resolver.Transactioner, stock string, batch []*StockAggregate) error {
 
-	coll := q.client.Database(q.client.DefaultDatabase).Collection(stock)
+	coll := q.db.client.Database(q.db.DefaultDatabase).Collection(stock)
 	session := tx.Transaction().(mongo.Session)
 
 	docs := make([]interface{}, len(batch))
@@ -40,7 +40,7 @@ func (q *Queries) InsertStockBatch(tx resolver.Transactioner, stock string, batc
 func (q *Queries) FetchAllStockBatch(tx resolver.Transactioner, stock string) ([]*StockAggregate, error) {
 	results := make([]*StockAggregate, 0)
 
-	coll := q.client.Database(q.client.DefaultDatabase).Collection(stock)
+	coll := q.db.client.Database(q.db.DefaultDatabase).Collection(stock)
 	session := tx.Transaction().(mongo.Session)
 
 	_, err := session.WithTransaction(tx.Context(), func(ctx mongo.SessionContext) (interface{}, error) {
@@ -66,9 +66,9 @@ func (q *Queries) FetchAllStockBatch(tx resolver.Transactioner, stock string) ([
 
 
 
-func (q *Queries) FetchAllStockBatchMassive(tx resolver.Transactioner, stock string, stockChan chan *StockAggregate) error {
+func (q *Queries) FetchAllStockBatchMassive(tx resolver.Transactioner, stock string, stockChan chan<- *StockAggregate) error {
 
-	coll := q.client.Database(q.client.DefaultDatabase).Collection(stock)
+	coll := q.db.client.Database(q.db.DefaultDatabase).Collection(stock)
 	session := tx.Transaction().(mongo.Session)
 
 	_, err := session.WithTransaction(tx.Context(), func(ctx mongo.SessionContext) (interface{}, error) {
@@ -96,7 +96,7 @@ func (q *Queries) FetchAllStockBatchMassive(tx resolver.Transactioner, stock str
 
 func (q *Queries) ClearAllStockData(tx resolver.Transactioner, stock string) error {
 	
-	coll := q.client.Database(q.client.DefaultDatabase).Collection(stock)
+	coll := q.db.client.Database(q.db.DefaultDatabase).Collection(stock)
 	session := tx.Transaction().(mongo.Session)
 
 	_, err := session.WithTransaction(tx.Context(), func(ctx mongo.SessionContext) (interface{}, error) {

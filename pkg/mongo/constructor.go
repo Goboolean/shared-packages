@@ -10,7 +10,7 @@ import (
 )
 
 type DB struct {
-	mongo.Client
+	client *mongo.Client
 	DefaultDatabase string
 }
 
@@ -49,15 +49,23 @@ func NewDB(c *resolver.Config) *DB {
 	}
 
 	return &DB{
-		Client:          *client,
+		client:          client,
 		DefaultDatabase: c.Database,
 	}
 }
 
-func (db *DB) Ping() error {
-	return db.Ping()
+func (db *DB) NewTx() (resolver.Transactioner, error) {
+	session, err := db.client.StartSession()
+	if err != nil {
+		return nil, err
+	}
+	return NewTransaction(session, context.Background()), nil
 }
 
 func (db *DB) Close() error {
-	return db.Disconnect(context.Background())
+	return db.client.Disconnect(context.Background());
+}
+
+func (db *DB) Ping() error {
+	return db.client.Ping(context.Background(), nil)
 }
