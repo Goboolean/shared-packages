@@ -1,20 +1,20 @@
 package rdbms_test
 
 import (
-	"context"
 	"os"
 	"testing"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/Goboolean/shared-packages/pkg/rdbms"
+	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/joho/godotenv"
+
+	_ "github.com/lib/pq"
 )
 
 
-
 var (
-	DB *rdbms.PSQL
-	Queries *rdbms.Queries
+	db *rdbms.PSQL
+	queries *rdbms.Queries
 )
 
 
@@ -28,7 +28,17 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	DB = rdbms.NewDB(&resolver.ConfigMap{
+	SetupPSQL()
+	code := m.Run()
+	TeardownPSQL()
+
+	os.Exit(code)
+}
+
+
+func SetupPSQL() {
+
+	db = rdbms.NewDB(&resolver.ConfigMap{
 		"HOST":     os.Getenv("PSQL_HOST"),
 		"PORT":     os.Getenv("PSQL_PORT"),
 		"USER":     os.Getenv("PSQL_USER"),
@@ -36,17 +46,19 @@ func TestMain(m *testing.M) {
 		"DATABASE": os.Getenv("PSQL_DATABASE"),
 	})
 
-	Queries = rdbms.New(DB)
-
-	code := m.Run()
-
-	os.Exit(code)
+	queries = rdbms.New(db)
 }
 
 
+func TeardownPSQL() {
+	if err := db.Close(); err != nil {
+		panic(err)
+	}
+}
 
-func TestCreateAccssInfo(t *testing.T) {
-	if err := Queries.CreateAccessInfo(context.Background()); err != nil {
-		t.Errorf("CreateAccessInfo() failed: %v", err)
+
+func Test_Constructor(t *testing.T) {
+	if err := db.Ping(); err != nil {
+		t.Errorf("Ping() failed: %v", err)
 	}
 }

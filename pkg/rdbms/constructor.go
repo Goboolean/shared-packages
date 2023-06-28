@@ -1,6 +1,7 @@
 package rdbms
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -46,7 +47,7 @@ func NewDB(c *resolver.ConfigMap) *PSQL {
 	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
-		panic(db)
+		panic(err)
 	}
 
 	return &PSQL{DB: db}
@@ -56,3 +57,11 @@ func (p *PSQL) Close() error {
 	return p.DB.Close()
 }
 
+func (p *PSQL) Ping() error {
+	return p.DB.Ping()
+}
+
+func (p *PSQL) NewTx(ctx context.Context) (resolver.Transactioner, error) {
+	tx, err := p.DB.BeginTx(ctx, nil)
+	return NewTransaction(tx, ctx), err
+}
