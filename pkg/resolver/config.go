@@ -2,6 +2,10 @@ package resolver
 
 import "fmt"
 
+
+
+// Config is a struct that holds the configuration values as a const
+// It is recommended to use ConfigMap rather than Config. It is now a lagecy
 type Config struct {
 	Host     string
 	Port     string
