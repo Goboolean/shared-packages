@@ -22,12 +22,12 @@ var (
 )
 
 func SetupMongo() {
-	instance = mongo.NewDB(&resolver.Config{
-		Host:     os.Getenv("MONGO_HOST"),
-		User:     os.Getenv("MONGO_USER"),
-		Port:     os.Getenv("MONGO_PORT"),
-		Password: os.Getenv("MONGO_PASS"),
-		Database: os.Getenv("MONGO_DATABASE"),
+	instance = mongo.NewDB(&resolver.ConfigMap{
+		"HOST":     os.Getenv("MONGO_HOST"),
+		"USER":     os.Getenv("MONGO_USER"),
+		"PORT":     os.Getenv("MONGO_PORT"),
+		"PASSWORD": os.Getenv("MONGO_PASS"),
+		"DATABASE": os.Getenv("MONGO_DATABASE"),
 	})
 	queries = mongo.New(instance)
 }

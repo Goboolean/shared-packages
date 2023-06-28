@@ -28,12 +28,12 @@ func TestMain(m *testing.M) {
 		panic(err)
 	}
 
-	DB = rdbms.NewDB(&resolver.Config{
-		Host:     os.Getenv("PSQL_HOST"),
-		Port:     os.Getenv("PSQL_PORT"),
-		User:     os.Getenv("PSQL_USER"),
-		Password: os.Getenv("PSQL_PASS"),
-		Database: os.Getenv("PSQL_DATABASE"),
+	DB = rdbms.NewDB(&resolver.ConfigMap{
+		"HOST":     os.Getenv("PSQL_HOST"),
+		"PORT":     os.Getenv("PSQL_PORT"),
+		"USER":     os.Getenv("PSQL_USER"),
+		"PASSWORD": os.Getenv("PSQL_PASS"),
+		"DATABASE": os.Getenv("PSQL_DATABASE"),
 	})
 
 	Queries = rdbms.New(DB)

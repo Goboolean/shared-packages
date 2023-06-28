@@ -14,30 +14,35 @@ type DB struct {
 	DefaultDatabase string
 }
 
-func NewDB(c *resolver.Config) *DB {
+func NewDB(c *resolver.ConfigMap) *DB {
 
-	if err := c.ShouldUserExist(); err != nil {
+	user, err := c.GetStringKey("USER")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldPWExist(); err != nil {
+	password, err := c.GetStringKey("PASSWORD")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldHostExist(); err != nil {
+	host, err := c.GetStringKey("HOST")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldPortExist(); err != nil {
+	port, err := c.GetStringKey("PORT")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldDBExist(); err != nil {
+	database, err := c.GetStringKey("DATABASE")
+	if err != nil {
 		panic(err)
 	}
 
 	mongoURI := fmt.Sprintf("mongodb://%s:%s@%s:%s/?maxPoolSize=20&w=majority",
-		c.User, c.Password, c.Host, c.Port)
+		user, password, host, port)
 
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI(mongoURI).SetServerAPIOptions(serverAPI)
@@ -50,7 +55,7 @@ func NewDB(c *resolver.Config) *DB {
 
 	return &DB{
 		client:          client,
-		DefaultDatabase: c.Database,
+		DefaultDatabase: database,
 	}
 }
 

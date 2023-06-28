@@ -11,9 +11,9 @@ import (
 var sub *kafka.Consumer
 
 func SetupConsumer() {
-	sub = kafka.NewConsumer(&resolver.Config{
-		Host: os.Getenv("KAFKA_HOST"),
-		Port: os.Getenv("KAFKA_PORT"),
+	sub = kafka.NewConsumer(&resolver.ConfigMap{
+		"HOST": os.Getenv("KAFKA_HOST"),
+		"PORT": os.Getenv("KAFKA_PORT"),
 	})
 }
 

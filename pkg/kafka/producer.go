@@ -15,17 +15,19 @@ type Producer struct {
 
 
 
-func NewProducer(c *resolver.Config) *Producer {
+func NewProducer(c *resolver.ConfigMap) *Producer {
 
-	if err := c.ShouldHostExist(); err != nil {
+	host, err := c.GetStringKey("HOST")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldPortExist(); err != nil {
+	port, err := c.GetStringKey("PORT")
+	if err != nil {
 		panic(err)
 	}
 
-	c.Address = fmt.Sprintf("%s:%s", c.Host, c.Port)
+	address := fmt.Sprintf("%s:%s", host, port)
 
 	config := sarama.NewConfig()
 	config.Producer.RequiredAcks = sarama.WaitForAll
@@ -33,7 +35,7 @@ func NewProducer(c *resolver.Config) *Producer {
 	config.Producer.Transaction.ID = createTransactionID()
 
 
-	producer, err := sarama.NewSyncProducer([]string{c.Address}, config)
+	producer, err := sarama.NewSyncProducer([]string{address}, config)
 
 	if err != nil {
 		panic(err)
