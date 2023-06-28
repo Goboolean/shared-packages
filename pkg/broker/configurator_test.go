@@ -58,7 +58,6 @@ func Test_CreateTopic(t *testing.T) {
 	if err != nil {
 		t.Errorf("TopicExists() = %v", err)
 	}
-	fmt.Println(exists)
 	if !exists {
 		t.Errorf("TopicExists() = %v, expected = true", exists)
 	}
