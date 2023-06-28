@@ -17,6 +17,7 @@ type Configurator struct {
 	AdminClient *kafka.AdminClient
 }
 
+// Constructor throws panic when error occurs
 func NewConfigurator(c *resolver.Config) *Configurator {
 
 	if err := c.ShouldHostExist(); err != nil {
@@ -31,7 +32,7 @@ func NewConfigurator(c *resolver.Config) *Configurator {
 
 	config := &kafka.ConfigMap{
 		"bootstrap.servers": c.Address,
-		"debug": "security, broker",
+		//"debug": "security, broker",
 	}
 
 	admin, err := kafka.NewAdminClient(config)
@@ -106,7 +107,7 @@ func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 // Delete a topic
 func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
 
-	// It returns error when topic does not exist
+	// It returns error when the topic does not exist
 	topic = packTopic(topic)
 
 	result, err := c.AdminClient.DeleteTopics(ctx, []string{topic})
@@ -162,10 +163,12 @@ func (c *Configurator) GetTopicList(ctx context.Context) ([]string, error) {
 		return nil, err
 	}
 
-	topicList := make([]string, len(metadata.Topics))
+	topicList := make([]string, 0)
 
 	for topic := range metadata.Topics {
-		topicList = append(topicList, topic)
+		if len(topic) > 0 {
+			topicList = append(topicList, topic)
+		}
 	}
 
 	return topicList, nil

@@ -103,7 +103,9 @@ func Test_GetTopicList(t *testing.T) {
 	if err != nil {
 		t.Errorf("GetTopicList() = %v", err)
 	}
-
+	
+	fmt.Printf("Topic Count: %d\n", len(topicList))
+	fmt.Printf("Topic List: \n")
 	for _, topic := range topicList {
 		fmt.Println(topic)
 	}
