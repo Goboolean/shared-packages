@@ -18,20 +18,22 @@ type Configurator struct {
 }
 
 // Constructor throws panic when error occurs
-func NewConfigurator(c *resolver.Config) *Configurator {
+func NewConfigurator(c *resolver.ConfigMap) *Configurator {
 
-	if err := c.ShouldHostExist(); err != nil {
+	host, err := c.GetStringKey("HOST")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldPortExist(); err != nil {
+	port, err := c.GetStringKey("PORT")
+	if err != nil {
 		panic(err)
 	}
 
-	c.Address = fmt.Sprintf("%s:%s", c.Host, c.Port)
+	address := fmt.Sprintf("%s:%s", host, port)
 
 	config := &kafka.ConfigMap{
-		"bootstrap.servers": c.Address,
+		"bootstrap.servers": address,
 		//"debug": "security, broker",
 	}
 

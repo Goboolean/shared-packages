@@ -16,9 +16,9 @@ var conf *broker.Configurator
 
 
 func SetupConfigurator() {
-	conf = broker.NewConfigurator(&resolver.Config{
-		Host: os.Getenv("KAFKA_HOST"),
-		Port: os.Getenv("KAFKA_PORT"),
+	conf = broker.NewConfigurator(&resolver.ConfigMap{
+		"HOST": os.Getenv("KAFKA_HOST"),
+		"PORT": os.Getenv("KAFKA_PORT"),
 	})
 }
 

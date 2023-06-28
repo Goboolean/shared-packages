@@ -22,20 +22,22 @@ type Publisher struct {
 
 
 
-func NewPublisher(c *resolver.Config) *Publisher {
+func NewPublisher(c *resolver.ConfigMap) *Publisher {
 
-	if err := c.ShouldHostExist(); err != nil {
+	host, err := c.GetStringKey("HOST")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldPortExist(); err != nil {
+	port, err := c.GetStringKey("PORT")
+	if err != nil {
 		panic(err)
 	}
 
-	c.Address = fmt.Sprintf("%s:%s", c.Host, c.Port)
+	address := fmt.Sprintf("%s:%s", host, port)
 
 	config := &kafka.ConfigMap{
-		"bootstrap.servers": c.Address,
+		"bootstrap.servers": address,
 		"acks": 0, // 0 if no response is required, 1 if only leader response is required, -1 if all in-sync replicas' response is required
 		"go.delivery.reports": true, // Delivery reports (on delivery success/failure) will be sent on the Producer.Events() channel
 	}

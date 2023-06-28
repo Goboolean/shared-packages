@@ -29,20 +29,22 @@ type Subscriber struct {
 
 
 
-func NewSubscriber(c *resolver.Config, ctx context.Context, lis SubscribeListener) *Subscriber {
+func NewSubscriber(c *resolver.ConfigMap, ctx context.Context, lis SubscribeListener) *Subscriber {
 
-	if err := c.ShouldHostExist(); err != nil {
+	host, err := c.GetStringKey("HOST")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldPortExist(); err != nil {
+	port, err := c.GetStringKey("PORT")
+	if err != nil {
 		panic(err)
 	}
 
-	c.Address = fmt.Sprintf("%s:%s", c.Host, c.Port)
+	address := fmt.Sprintf("%s:%s", host, port)
 
 	config := &kafka.ConfigMap{
-		"bootstrap.servers":       c.Address,
+		"bootstrap.servers":       address,
 		"auto.offset.reset":       "earliest",
 		"socket.keepalive.enable": true,
 		"group.id":          "goboolean.group",

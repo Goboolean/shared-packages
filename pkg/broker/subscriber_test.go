@@ -18,9 +18,9 @@ var (
 
 
 func SetupSubscriber() {
-	sub = broker.NewSubscriber(&resolver.Config{
-		Host: os.Getenv("KAFKA_HOST"),
-		Port: os.Getenv("KAFKA_PORT"),
+	sub = broker.NewSubscriber(&resolver.ConfigMap{
+		"HOST": os.Getenv("KAFKA_HOST"),
+		"PORT": os.Getenv("KAFKA_PORT"),
 	}, context.Background(), &SubscribeListenerImpl{})
 }
 
