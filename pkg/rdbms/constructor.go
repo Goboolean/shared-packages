@@ -1,6 +1,7 @@
 package rdbms
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -56,3 +57,11 @@ func (p *PSQL) Close() error {
 	return p.DB.Close()
 }
 
+func (p *PSQL) Ping() error {
+	return p.DB.Ping()
+}
+
+func (p *PSQL) NewTx(ctx context.Context) (resolver.Transactioner, error) {
+	tx, err := p.DB.BeginTx(ctx, nil)
+	return NewTransaction(tx, ctx), err
+}
