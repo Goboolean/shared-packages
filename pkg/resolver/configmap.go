@@ -10,9 +10,7 @@ import (
 type ConfigMap map[string]interface{}
 
 // One way to set key on ConfigMap is to use Constructor as
-// &ConfigMap{
-// 	 "KEY": value,
-// }
+// &ConfigMap{"KEY": value, ...}
 // The other way is to use SetKey method
 func (c *ConfigMap) SetKey(key string, value interface{}) error {
 	(*c)[key] = value
@@ -81,5 +79,3 @@ func (c *ConfigMap) GetFloatKey(key string) (float64, error) {
 
 	return floatValue, nil
 }
-
-
