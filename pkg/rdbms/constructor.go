@@ -47,7 +47,7 @@ func NewDB(c *resolver.ConfigMap) *PSQL {
 	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
-		panic(db)
+		panic(err)
 	}
 
 	return &PSQL{DB: db}

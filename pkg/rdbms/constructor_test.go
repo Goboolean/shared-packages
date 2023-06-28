@@ -7,6 +7,8 @@ import (
 	"github.com/Goboolean/shared-packages/pkg/rdbms"
 	"github.com/Goboolean/shared-packages/pkg/resolver"
 	"github.com/joho/godotenv"
+
+	_ "github.com/lib/pq"
 )
 
 
