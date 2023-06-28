@@ -49,7 +49,7 @@ func TestPublisher(t *testing.T) {
 
 
 
-func TestSendData(t *testing.T) {
+func Test_SendData(t *testing.T) {
 
 	var topic = "test-topic"
 	SetupPublisher()
@@ -75,7 +75,7 @@ func TestSendData(t *testing.T) {
 }
 
 
-func TestSendDataBatch(t *testing.T) {
+func Test_SendDataBatch(t *testing.T) {
 
 	var topic = "test-topic"
 	SetupPublisher()

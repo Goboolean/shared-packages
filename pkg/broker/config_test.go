@@ -14,7 +14,7 @@ func Test_packTopic(t *testing.T) {
 		{
 			name: "topic name asdf test",
 			args: args{topic: "asdf"},
-			want: "broker:asdf",
+			want: "broker.asdf",
 		},
 	}
 	for _, tt := range tests {
@@ -37,7 +37,7 @@ func Test_unpackTopic(t *testing.T) {
 	}{
 		{
 			name: "topic name asdf test",
-			args: args{topic: "broker:asdf"},
+			args: args{topic: "broker.asdf"},
 			want: "asdf",
 		},
 	}

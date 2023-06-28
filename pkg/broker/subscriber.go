@@ -21,13 +21,9 @@ type SubscribeListener interface {
 type Subscriber struct {
 	consumer *kafka.Consumer
 
-	topic  string
-	config *kafka.ConfigMap
-
 	listener SubscribeListener
 
 	ctx context.Context
-
 	t topicManager
 }
 
@@ -61,7 +57,6 @@ func NewSubscriber(c *resolver.Config, ctx context.Context, lis SubscribeListene
 
 	instance := &Subscriber{
 		consumer: consumer,
-		config:     config,
 		listener:   lis,
 		ctx: ctx,
 	}

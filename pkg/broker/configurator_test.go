@@ -2,6 +2,7 @@ package broker_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -27,14 +28,21 @@ func TeardownConfigurator() {
 
 
 
-func TestConfigurator(t *testing.T) {
+func Test_Configurator(t *testing.T) {
 	SetupConfigurator()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	if err := conf.Ping(ctx); err != nil {
+		t.Errorf("Ping() = %v", err)
+	}
+
+	cancel()
 	TeardownConfigurator()
 }
 
 
 
-func TestCreateTopic(t *testing.T) {
+func Test_CreateTopic(t *testing.T) {
 	
 	var topic = "test-topic"
 	SetupConfigurator()
@@ -50,6 +58,7 @@ func TestCreateTopic(t *testing.T) {
 	if err != nil {
 		t.Errorf("TopicExists() = %v", err)
 	}
+	fmt.Println(exists)
 	if !exists {
 		t.Errorf("TopicExists() = %v, expected = true", exists)
 	}
@@ -59,7 +68,7 @@ func TestCreateTopic(t *testing.T) {
 
 
 
-func TestDeleteTopic(t *testing.T) {
+func Test_DeleteTopic(t *testing.T) {
 
 	var topic = "test-topic"
 	SetupConfigurator()
@@ -77,6 +86,28 @@ func TestDeleteTopic(t *testing.T) {
 	}
 	if exists {
 		t.Errorf("TopicExists() = %v, expected = false", exists)
+	}
+	
+	TeardownConfigurator()
+}
+
+
+func Test_GetTopicList(t *testing.T) {
+	
+	SetupConfigurator()
+
+	ctx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancelFunc()
+
+	topicList, err := conf.GetTopicList(ctx);
+	if err != nil {
+		t.Errorf("GetTopicList() = %v", err)
+	}
+	
+	fmt.Printf("Topic Count: %d\n", len(topicList))
+	fmt.Printf("Topic List: \n")
+	for _, topic := range topicList {
+		fmt.Println(topic)
 	}
 
 	TeardownConfigurator()
