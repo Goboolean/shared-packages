@@ -8,11 +8,16 @@ import (
 	"time"
 )
 
-type AccessLog struct {
-	ConnectedAt time.Time
+type StockMetum struct {
+	StockID     string
+	StockCode   string
+	FetchOrigin string
+	StockName   string
+	CreatedAt   time.Time
 }
 
-type Stock struct {
-	StockID     string
-	FetchOrigin string
+type StoreLog struct {
+	StockID  string
+	StoredAt time.Time
+	Status   string
 }

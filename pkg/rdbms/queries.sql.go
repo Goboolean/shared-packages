@@ -10,7 +10,7 @@ import (
 )
 
 const checkStockExist = `-- name: CheckStockExist :one
-SELECT EXISTS(SELECT 1 FROM stock WHERE stock_id = (?))
+SELECT EXISTS(SELECT 1 FROM stock_meta WHERE stock_id = (?))
 `
 
 func (q *Queries) CheckStockExist(ctx context.Context, stockID string) (bool, error) {
@@ -21,7 +21,7 @@ func (q *Queries) CheckStockExist(ctx context.Context, stockID string) (bool, er
 }
 
 const createAccessInfo = `-- name: CreateAccessInfo :exec
-INSERT INTO access_log (connected_at) VALUES (NOW())
+INSERT INTO store_log (stock_id, status) VALUES (stock_id, status)
 `
 
 func (q *Queries) CreateAccessInfo(ctx context.Context) error {
@@ -29,13 +29,99 @@ func (q *Queries) CreateAccessInfo(ctx context.Context) error {
 	return err
 }
 
-const getStockOrigin = `-- name: GetStockOrigin :one
-SELECT fetch_origin FROM stock WHERE stock_id = (?)
+const createStockMeta = `-- name: CreateStockMeta :exec
+INSERT INTO stock_meta (stock_id, stock_code, fetch_origin, stock_name)
+VALUES (stock_code || '&' || fetch_origin, stock_code, fetch_origin, stock_name)
 `
 
-func (q *Queries) GetStockOrigin(ctx context.Context, stockID string) (string, error) {
-	row := q.db.QueryRowContext(ctx, getStockOrigin, stockID)
-	var fetch_origin string
-	err := row.Scan(&fetch_origin)
-	return fetch_origin, err
+func (q *Queries) CreateStockMeta(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, createStockMeta)
+	return err
+}
+
+const getStockList = `-- name: GetStockList :many
+SELECT stock_id FROM stock_meta
+`
+
+func (q *Queries) GetStockList(ctx context.Context) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getStockList)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var stock_id string
+		if err := rows.Scan(&stock_id); err != nil {
+			return nil, err
+		}
+		items = append(items, stock_id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getStockListByOrigin = `-- name: GetStockListByOrigin :many
+SELECT stock_id FROM stock_meta WHERE fetch_origin = (?)
+`
+
+func (q *Queries) GetStockListByOrigin(ctx context.Context, fetchOrigin string) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getStockListByOrigin, fetchOrigin)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var stock_id string
+		if err := rows.Scan(&stock_id); err != nil {
+			return nil, err
+		}
+		items = append(items, stock_id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getStockListWithDetail = `-- name: GetStockListWithDetail :many
+SELECT stock_id, stock_code, fetch_origin, stock_name, created_at FROM stock_meta
+`
+
+func (q *Queries) GetStockListWithDetail(ctx context.Context) ([]StockMetum, error) {
+	rows, err := q.db.QueryContext(ctx, getStockListWithDetail)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []StockMetum
+	for rows.Next() {
+		var i StockMetum
+		if err := rows.Scan(
+			&i.StockID,
+			&i.StockCode,
+			&i.FetchOrigin,
+			&i.StockName,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
