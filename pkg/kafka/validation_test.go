@@ -5,14 +5,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/shared-packages/pkg/kafka"
+	"github.com/Goboolean/shared/pkg/kafka"
 	"google.golang.org/protobuf/proto"
 )
 
-
 var valEventReceived = make(chan *kafka.SimEvent)
 
-type ValEventTester struct {}
+type ValEventTester struct{}
 
 func (t *ValEventTester) OnRecieveValRequestedEvent(e *kafka.SimEvent) {
 	valEventReceived <- e
@@ -54,17 +53,15 @@ func (t *ValEventTester) OnRecieveValFinishedRollbackEvent(e *kafka.SimEvent) {
 	valEventReceived <- e
 }
 
-
-
 func Test_ValEvent(t *testing.T) {
-	
+
 	type args struct {
-		event *kafka.SimEvent
+		event        *kafka.SimEvent
 		subscription func(context.Context)
-		sendEvent func(*kafka.SimEvent) error
+		sendEvent    func(*kafka.SimEvent) error
 	}
 
-	tests := []struct{
+	tests := []struct {
 		name string
 		args args
 	}{
@@ -140,7 +137,6 @@ func Test_ValEvent(t *testing.T) {
 		},
 	}
 
-	
 	defer func() {
 		if err := recover(); err != nil {
 			t.Errorf("SubscribeValEvent() failed: %v", err)

@@ -1,47 +1,51 @@
 package rdbms
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 )
-
-
 
 type PSQL struct {
 	*sql.DB
 }
 
-func NewDB(c *resolver.Config) *PSQL {
+func NewDB(c *resolver.ConfigMap) *PSQL {
 
-	if err := c.ShouldHostExist(); err != nil {
+	user, err := c.GetStringKey("USER")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldUserExist(); err != nil {
+	password, err := c.GetStringKey("PASSWORD")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldPortExist(); err != nil {
+	host, err := c.GetStringKey("HOST")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldPWExist(); err != nil {
+	port, err := c.GetStringKey("PORT")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldDBExist(); err != nil {
+	database, err := c.GetStringKey("DATABASE")
+	if err != nil {
 		panic(err)
 	}
 
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-	  c.Host, c.Port, c.User, c.Password, c.Database)
+		host, port, user, password, database)
 
 	db, err := sql.Open("postgres", psqlInfo)
 
 	if err != nil {
-		panic(db)
+		panic(err)
 	}
 
 	return &PSQL{DB: db}
@@ -51,3 +55,11 @@ func (p *PSQL) Close() error {
 	return p.DB.Close()
 }
 
+func (p *PSQL) Ping() error {
+	return p.DB.Ping()
+}
+
+func (p *PSQL) NewTx(ctx context.Context) (resolver.Transactioner, error) {
+	tx, err := p.DB.BeginTx(ctx, nil)
+	return NewTransaction(tx, ctx), err
+}

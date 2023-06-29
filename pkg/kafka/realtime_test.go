@@ -5,14 +5,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/shared-packages/pkg/kafka"
+	"github.com/Goboolean/shared/pkg/kafka"
 	"google.golang.org/protobuf/proto"
 )
 
-
 var realEventReceived = make(chan *kafka.RealEvent)
 
-type RealEventTester struct {}
+type RealEventTester struct{}
 
 func (t *RealEventTester) OnRecieveRealRequestedEvent(e *kafka.RealEvent) {
 	realEventReceived <- e
@@ -38,17 +37,15 @@ func (t *RealEventTester) OnRecieveRealAllocatedRollbackEvent(e *kafka.RealEvent
 	realEventReceived <- e
 }
 
-
-
 func Test_RealEvent(t *testing.T) {
-	
+
 	type args struct {
-		event *kafka.RealEvent
+		event        *kafka.RealEvent
 		subscription func(context.Context)
-		sendEvent func(*kafka.RealEvent) error
+		sendEvent    func(*kafka.RealEvent) error
 	}
 
-	tests := []struct{
+	tests := []struct {
 		name string
 		args args
 	}{
@@ -95,7 +92,6 @@ func Test_RealEvent(t *testing.T) {
 			},
 		},
 	}
-
 
 	defer func() {
 		if err := recover(); err != nil {

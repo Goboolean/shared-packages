@@ -3,10 +3,9 @@ package mongo
 import (
 	"context"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"go.mongodb.org/mongo-driver/mongo"
 )
-
 
 type Transaction struct {
 	session mongo.Session

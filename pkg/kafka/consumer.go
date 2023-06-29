@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/Shopify/sarama"
 )
-
-
 
 type Consumer struct {
 	consumer sarama.Consumer
@@ -16,24 +14,24 @@ type Consumer struct {
 	data map[string]chan interface{}
 }
 
+func NewConsumer(c *resolver.ConfigMap) *Consumer {
 
-
-func NewConsumer(c *resolver.Config) *Consumer {
-	
-	if err := c.ShouldHostExist(); err != nil {
+	host, err := c.GetStringKey("HOST")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldPortExist(); err != nil {
+	port, err := c.GetStringKey("PORT")
+	if err != nil {
 		panic(err)
 	}
 
-	c.Address = fmt.Sprintf("%s:%s", c.Host, c.Port)
+	address := fmt.Sprintf("%s:%s", host, port)
 
 	config := sarama.NewConfig()
 	config.Producer.Return.Errors = true
 
-	consumer, err := sarama.NewConsumer([]string{c.Address}, config)
+	consumer, err := sarama.NewConsumer([]string{address}, config)
 
 	if err != nil {
 		log.Fatalf("err: failed to laod kafka consumer: %v", err)
@@ -44,8 +42,6 @@ func NewConsumer(c *resolver.Config) *Consumer {
 		consumer: consumer,
 	}
 }
-
-
 
 func (c *Consumer) Close() error {
 	return c.consumer.Close()

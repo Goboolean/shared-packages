@@ -6,31 +6,25 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/shared-packages/pkg/broker"
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/broker"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"google.golang.org/protobuf/proto"
 )
-
 
 var (
 	sub *broker.Subscriber
 )
 
-
 func SetupSubscriber() {
-	sub = broker.NewSubscriber(&resolver.Config{
-		Host: os.Getenv("KAFKA_HOST"),
-		Port: os.Getenv("KAFKA_PORT"),
+	sub = broker.NewSubscriber(&resolver.ConfigMap{
+		"HOST": os.Getenv("KAFKA_HOST"),
+		"PORT": os.Getenv("KAFKA_PORT"),
 	}, context.Background(), &SubscribeListenerImpl{})
 }
-
 
 func TeardownSubscriber() {
 	sub.Close()
 }
-
-
-
 
 func Test_Subscriber(t *testing.T) {
 
@@ -40,23 +34,19 @@ func Test_Subscriber(t *testing.T) {
 	defer cancelFunc()
 
 	if err := sub.Ping(ctx); err != nil {
-		t.Errorf("Ping() failed: %v", err)	
+		t.Errorf("Ping() failed: %v", err)
 	}
 
 	TeardownSubscriber()
 }
 
-
-
-
-type SubscribeListenerImpl struct {}
+type SubscribeListenerImpl struct{}
 
 var stockChan = make(chan *broker.StockAggregate)
 
 func (i *SubscribeListenerImpl) OnReceiveStockAggs(name string, data *broker.StockAggregate) {
 	stockChan <- data
 }
-
 
 func Test_Subscribe(t *testing.T) {
 
@@ -115,7 +105,7 @@ func Test_Subscribe(t *testing.T) {
 			select {
 			case <-ctx.Done():
 				t.Errorf("timeout: failed to receive data")
-			case got := <- stockChan:
+			case got := <-stockChan:
 				if !proto.Equal(got, tt.want) {
 					t.Errorf("OnReceiveStockAggs() = %v, want %v", got, tt.want)
 				}

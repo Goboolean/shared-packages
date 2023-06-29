@@ -5,33 +5,34 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/pkg/errors"
 )
-
-
 
 // Configurator has a role for making and deleting topic, checking topic exists, and getting topic list.
 type Configurator struct {
 	AdminClient *kafka.AdminClient
 }
 
-func NewConfigurator(c *resolver.Config) *Configurator {
+// Constructor throws panic when error occurs
+func NewConfigurator(c *resolver.ConfigMap) *Configurator {
 
-	if err := c.ShouldHostExist(); err != nil {
+	host, err := c.GetStringKey("HOST")
+	if err != nil {
 		panic(err)
 	}
 
-	if err := c.ShouldPortExist(); err != nil {
+	port, err := c.GetStringKey("PORT")
+	if err != nil {
 		panic(err)
 	}
 
-	c.Address = fmt.Sprintf("%s:%s", c.Host, c.Port)
+	address := fmt.Sprintf("%s:%s", host, port)
 
 	config := &kafka.ConfigMap{
-		"bootstrap.servers": c.Address,
-		"debug": "security, broker",
+		"bootstrap.servers": address,
+		//"debug": "security, broker",
 	}
 
 	admin, err := kafka.NewAdminClient(config)
@@ -43,12 +44,10 @@ func NewConfigurator(c *resolver.Config) *Configurator {
 	return &Configurator{AdminClient: admin}
 }
 
-
 // It should be called before program ends to free memory
 func (c *Configurator) Close() {
 	c.AdminClient.Close()
 }
-
 
 // Check if connection to kafka is alive
 func (c *Configurator) Ping(ctx context.Context) error {
@@ -67,7 +66,6 @@ func (c *Configurator) Ping(ctx context.Context) error {
 	return err
 }
 
-
 // Create a topic
 func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 
@@ -84,8 +82,8 @@ func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 	}
 
 	topicInfo := kafka.TopicSpecification{
-		Topic: topic,
-		NumPartitions: 1,
+		Topic:             topic,
+		NumPartitions:     1,
 		ReplicationFactor: 1,
 	}
 
@@ -94,7 +92,7 @@ func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	if err := result[0].Error; err.Code() != kafka.ErrNoError {
 		return fmt.Errorf(err.String())
 	}
@@ -102,11 +100,10 @@ func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 	return nil
 }
 
-
 // Delete a topic
 func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
 
-	// It returns error when topic does not exist
+	// It returns error when the topic does not exist
 	topic = packTopic(topic)
 
 	result, err := c.AdminClient.DeleteTopics(ctx, []string{topic})
@@ -114,14 +111,13 @@ func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
 	if err != nil {
 		return errors.Wrap(err, "fatal error while deleting topic")
 	}
-	
+
 	if err := result[0].Error; err.Code() != kafka.ErrNoError {
 		return errors.Wrap(fmt.Errorf(err.String()), "trival error while deleting topic")
 	}
 
 	return nil
 }
-
 
 // Check if given topic exists
 func (c *Configurator) TopicExists(ctx context.Context, topic string) (bool, error) {
@@ -145,7 +141,6 @@ func (c *Configurator) TopicExists(ctx context.Context, topic string) (bool, err
 	return exists, nil
 }
 
-
 // Get all existing topic list as a string slice
 func (c *Configurator) GetTopicList(ctx context.Context) ([]string, error) {
 
@@ -162,10 +157,12 @@ func (c *Configurator) GetTopicList(ctx context.Context) ([]string, error) {
 		return nil, err
 	}
 
-	topicList := make([]string, len(metadata.Topics))
+	topicList := make([]string, 0)
 
 	for topic := range metadata.Topics {
-		topicList = append(topicList, topic)
+		if len(topic) > 0 {
+			topicList = append(topicList, topic)
+		}
 	}
 
 	return topicList, nil

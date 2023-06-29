@@ -7,26 +7,22 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/shared-packages/pkg/broker"
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/broker"
+	"github.com/Goboolean/shared/pkg/resolver"
 )
 
 var conf *broker.Configurator
 
-
-
 func SetupConfigurator() {
-	conf = broker.NewConfigurator(&resolver.Config{
-		Host: os.Getenv("KAFKA_HOST"),
-		Port: os.Getenv("KAFKA_PORT"),
+	conf = broker.NewConfigurator(&resolver.ConfigMap{
+		"HOST": os.Getenv("KAFKA_HOST"),
+		"PORT": os.Getenv("KAFKA_PORT"),
 	})
 }
 
 func TeardownConfigurator() {
 	conf.Close()
 }
-
-
 
 func Test_Configurator(t *testing.T) {
 	SetupConfigurator()
@@ -40,10 +36,8 @@ func Test_Configurator(t *testing.T) {
 	TeardownConfigurator()
 }
 
-
-
 func Test_CreateTopic(t *testing.T) {
-	
+
 	var topic = "test-topic"
 	SetupConfigurator()
 
@@ -58,15 +52,12 @@ func Test_CreateTopic(t *testing.T) {
 	if err != nil {
 		t.Errorf("TopicExists() = %v", err)
 	}
-	fmt.Println(exists)
 	if !exists {
 		t.Errorf("TopicExists() = %v, expected = true", exists)
 	}
-	
+
 	TeardownConfigurator()
 }
-
-
 
 func Test_DeleteTopic(t *testing.T) {
 
@@ -75,7 +66,7 @@ func Test_DeleteTopic(t *testing.T) {
 
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancelFunc()
-	
+
 	if err := conf.DeleteTopic(ctx, topic); err != nil {
 		t.Errorf("DeleteTopic() = %v", err)
 	}
@@ -87,23 +78,24 @@ func Test_DeleteTopic(t *testing.T) {
 	if exists {
 		t.Errorf("TopicExists() = %v, expected = false", exists)
 	}
-	
+
 	TeardownConfigurator()
 }
 
-
 func Test_GetTopicList(t *testing.T) {
-	
+
 	SetupConfigurator()
 
 	ctx, cancelFunc := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancelFunc()
 
-	topicList, err := conf.GetTopicList(ctx);
+	topicList, err := conf.GetTopicList(ctx)
 	if err != nil {
 		t.Errorf("GetTopicList() = %v", err)
 	}
 
+	fmt.Printf("Topic Count: %d\n", len(topicList))
+	fmt.Printf("Topic List: \n")
 	for _, topic := range topicList {
 		fmt.Println(topic)
 	}

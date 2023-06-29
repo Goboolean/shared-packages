@@ -1,4 +1,4 @@
-module github.com/Goboolean/shared-packages
+module github.com/Goboolean/shared
 
 go 1.18
 
@@ -6,9 +6,10 @@ require (
 	github.com/Shopify/sarama v1.38.1
 	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.9
 	github.com/pkg/errors v0.9.1
-	go.mongodb.org/mongo-driver v1.11.4
-	google.golang.org/protobuf v1.30.0
+	go.mongodb.org/mongo-driver v1.12.0
+	google.golang.org/protobuf v1.31.0
 )
 
 require (
@@ -36,5 +37,5 @@ require (
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 )

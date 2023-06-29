@@ -5,14 +5,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/shared-packages/pkg/kafka"
+	"github.com/Goboolean/shared/pkg/kafka"
 	"google.golang.org/protobuf/proto"
 )
 
-
 var simEventReceived = make(chan *kafka.SimEvent)
 
-type SimEventTester struct {}
+type SimEventTester struct{}
 
 func (t *SimEventTester) OnRecieveSimRequestedEvent(e *kafka.SimEvent) {
 	simEventReceived <- e
@@ -54,17 +53,15 @@ func (t *SimEventTester) OnRecieveSimFinishedRollbackEvent(e *kafka.SimEvent) {
 	simEventReceived <- e
 }
 
-
-
 func Test_SimEvent(t *testing.T) {
-	
+
 	type args struct {
-		event *kafka.SimEvent
+		event        *kafka.SimEvent
 		subscription func(context.Context)
-		sendEvent func(*kafka.SimEvent) error
+		sendEvent    func(*kafka.SimEvent) error
 	}
 
-	tests := []struct{
+	tests := []struct {
 		name string
 		args args
 	}{
@@ -139,7 +136,6 @@ func Test_SimEvent(t *testing.T) {
 			},
 		},
 	}
-
 
 	defer func() {
 		if err := recover(); err != nil {
