@@ -3,14 +3,13 @@ package kafka
 import (
 	"context"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/Shopify/sarama"
 )
 
-
 type Transaction struct {
 	session sarama.SyncProducer
-	ctx context.Context
+	ctx     context.Context
 }
 
 func (d *Transaction) Commit() error {
@@ -27,7 +26,7 @@ func (d *Transaction) Context() context.Context {
 
 func (d *Transaction) Transaction() interface{} {
 	return d.session
-} 
+}
 
 func NewTransaction(session sarama.SyncProducer, ctx context.Context) resolver.Transactioner {
 	if err := session.BeginTxn(); err != nil {

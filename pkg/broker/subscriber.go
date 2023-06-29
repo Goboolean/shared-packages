@@ -7,12 +7,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"google.golang.org/protobuf/proto"
 )
-
-
 
 type SubscribeListener interface {
 	OnReceiveStockAggs(name string, stock *StockAggregate)
@@ -24,10 +22,8 @@ type Subscriber struct {
 	listener SubscribeListener
 
 	ctx context.Context
-	t topicManager
+	t   topicManager
 }
-
-
 
 func NewSubscriber(c *resolver.ConfigMap, ctx context.Context, lis SubscribeListener) *Subscriber {
 
@@ -47,7 +43,7 @@ func NewSubscriber(c *resolver.ConfigMap, ctx context.Context, lis SubscribeList
 		"bootstrap.servers":       address,
 		"auto.offset.reset":       "earliest",
 		"socket.keepalive.enable": true,
-		"group.id":          "goboolean.group",
+		"group.id":                "goboolean.group",
 	}
 
 	consumer, err := kafka.NewConsumer(config)
@@ -59,16 +55,14 @@ func NewSubscriber(c *resolver.ConfigMap, ctx context.Context, lis SubscribeList
 
 	instance := &Subscriber{
 		consumer: consumer,
-		listener:   lis,
-		ctx: ctx,
+		listener: lis,
+		ctx:      ctx,
 	}
 
 	go instance.subscribeMessage(ctx)
 
 	return instance
 }
-
-
 
 func (s *Subscriber) subscribeMessage(ctx context.Context) {
 	for {
@@ -102,8 +96,6 @@ func (s *Subscriber) Close() {
 	s.consumer.Close()
 }
 
-
-
 func (s *Subscriber) Ping(ctx context.Context) error {
 	deadline, ok := ctx.Deadline()
 
@@ -116,8 +108,6 @@ func (s *Subscriber) Ping(ctx context.Context) error {
 	_, err := s.consumer.GetMetadata(nil, true, int(remaining.Milliseconds()))
 	return err
 }
-
-
 
 func (s *Subscriber) Subscribe(stock string) error {
 	stock = packTopic(stock)
@@ -139,19 +129,15 @@ func (s *Subscriber) Unsubscribe(stock string) error {
 	return s.t.renewSupscription()
 }
 
-
-
-
 type topicManager struct {
 	consumer *kafka.Consumer
-	
-	topicList map[string] struct{}
+
+	topicList map[string]struct{}
 }
 
 func newTopicManager(consumer *kafka.Consumer) *topicManager {
 	return &topicManager{consumer: consumer}
 }
-
 
 func (t *topicManager) addTopic(topic string) error {
 
@@ -164,7 +150,6 @@ func (t *topicManager) addTopic(topic string) error {
 	return nil
 }
 
-
 func (t *topicManager) deleteTopic(topic string) error {
 	topic = packTopic(topic)
 
@@ -176,7 +161,6 @@ func (t *topicManager) deleteTopic(topic string) error {
 	delete(t.topicList, topic)
 	return nil
 }
-
 
 func (t *topicManager) getTopicList() []string {
 	topicList := make([]string, 0)

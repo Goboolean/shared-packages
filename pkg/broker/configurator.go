@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/pkg/errors"
 )
-
-
 
 // Configurator has a role for making and deleting topic, checking topic exists, and getting topic list.
 type Configurator struct {
@@ -46,12 +44,10 @@ func NewConfigurator(c *resolver.ConfigMap) *Configurator {
 	return &Configurator{AdminClient: admin}
 }
 
-
 // It should be called before program ends to free memory
 func (c *Configurator) Close() {
 	c.AdminClient.Close()
 }
-
 
 // Check if connection to kafka is alive
 func (c *Configurator) Ping(ctx context.Context) error {
@@ -70,7 +66,6 @@ func (c *Configurator) Ping(ctx context.Context) error {
 	return err
 }
 
-
 // Create a topic
 func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 
@@ -87,8 +82,8 @@ func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 	}
 
 	topicInfo := kafka.TopicSpecification{
-		Topic: topic,
-		NumPartitions: 1,
+		Topic:             topic,
+		NumPartitions:     1,
 		ReplicationFactor: 1,
 	}
 
@@ -97,14 +92,13 @@ func (c *Configurator) CreateTopic(ctx context.Context, topic string) error {
 	if err != nil {
 		return err
 	}
-	
+
 	if err := result[0].Error; err.Code() != kafka.ErrNoError {
 		return fmt.Errorf(err.String())
 	}
 
 	return nil
 }
-
 
 // Delete a topic
 func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
@@ -117,14 +111,13 @@ func (c *Configurator) DeleteTopic(ctx context.Context, topic string) error {
 	if err != nil {
 		return errors.Wrap(err, "fatal error while deleting topic")
 	}
-	
+
 	if err := result[0].Error; err.Code() != kafka.ErrNoError {
 		return errors.Wrap(fmt.Errorf(err.String()), "trival error while deleting topic")
 	}
 
 	return nil
 }
-
 
 // Check if given topic exists
 func (c *Configurator) TopicExists(ctx context.Context, topic string) (bool, error) {
@@ -147,7 +140,6 @@ func (c *Configurator) TopicExists(ctx context.Context, topic string) (bool, err
 	_, exists := metadata.Topics[topic]
 	return exists, nil
 }
-
 
 // Get all existing topic list as a string slice
 func (c *Configurator) GetTopicList(ctx context.Context) ([]string, error) {

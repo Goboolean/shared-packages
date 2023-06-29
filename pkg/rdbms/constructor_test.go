@@ -4,22 +4,20 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Goboolean/shared-packages/pkg/rdbms"
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/rdbms"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/joho/godotenv"
 
 	_ "github.com/lib/pq"
 )
 
-
 var (
-	db *rdbms.PSQL
+	db      *rdbms.PSQL
 	queries *rdbms.Queries
 )
 
-
 func TestMain(m *testing.M) {
-	
+
 	if err := os.Chdir("../../"); err != nil {
 		panic(err)
 	}
@@ -35,7 +33,6 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-
 func SetupPSQL() {
 
 	db = rdbms.NewDB(&resolver.ConfigMap{
@@ -49,13 +46,11 @@ func SetupPSQL() {
 	queries = rdbms.New(db)
 }
 
-
 func TeardownPSQL() {
 	if err := db.Close(); err != nil {
 		panic(err)
 	}
 }
-
 
 func Test_Constructor(t *testing.T) {
 	if err := db.Ping(); err != nil {

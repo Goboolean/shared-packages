@@ -5,10 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 )
-
-
 
 type PSQL struct {
 	*sql.DB
@@ -42,7 +40,7 @@ func NewDB(c *resolver.ConfigMap) *PSQL {
 	}
 
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-	  host, port, user, password, database)
+		host, port, user, password, database)
 
 	db, err := sql.Open("postgres", psqlInfo)
 

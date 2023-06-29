@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/Shopify/sarama"
 )
-
-
 
 type Consumer struct {
 	consumer sarama.Consumer
@@ -16,10 +14,8 @@ type Consumer struct {
 	data map[string]chan interface{}
 }
 
-
-
 func NewConsumer(c *resolver.ConfigMap) *Consumer {
-	
+
 	host, err := c.GetStringKey("HOST")
 	if err != nil {
 		panic(err)
@@ -46,8 +42,6 @@ func NewConsumer(c *resolver.ConfigMap) *Consumer {
 		consumer: consumer,
 	}
 }
-
-
 
 func (c *Consumer) Close() error {
 	return c.consumer.Close()

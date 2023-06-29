@@ -6,19 +6,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Goboolean/shared-packages/pkg/broker"
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/broker"
+	"github.com/Goboolean/shared/pkg/resolver"
 )
 
 var (
-	pub *broker.Publisher
-	data = &broker.StockAggregate{}
+	pub       *broker.Publisher
+	data      = &broker.StockAggregate{}
 	dataBatch = []*broker.StockAggregate{
 		{}, {}, {},
 	}
 )
-
-
 
 func SetupPublisher() {
 	pub = broker.NewPublisher(&resolver.ConfigMap{
@@ -30,8 +28,6 @@ func SetupPublisher() {
 func TeardownPublisher() {
 	pub.Close()
 }
-
-
 
 func TestPublisher(t *testing.T) {
 
@@ -46,8 +42,6 @@ func TestPublisher(t *testing.T) {
 
 	TeardownPublisher()
 }
-
-
 
 func Test_SendData(t *testing.T) {
 
@@ -74,7 +68,6 @@ func Test_SendData(t *testing.T) {
 	TeardownConfigurator()
 }
 
-
 func Test_SendDataBatch(t *testing.T) {
 
 	var topic = "test-topic"
@@ -99,6 +92,3 @@ func Test_SendDataBatch(t *testing.T) {
 	TeardownPublisher()
 	TeardownConfigurator()
 }
-
-
-

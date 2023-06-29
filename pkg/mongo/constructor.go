@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type DB struct {
-	client *mongo.Client
+	client          *mongo.Client
 	DefaultDatabase string
 }
 
@@ -68,7 +68,7 @@ func (db *DB) NewTx(ctx context.Context) (resolver.Transactioner, error) {
 }
 
 func (db *DB) Close() error {
-	return db.client.Disconnect(context.Background());
+	return db.client.Disconnect(context.Background())
 }
 
 func (db *DB) Ping() error {

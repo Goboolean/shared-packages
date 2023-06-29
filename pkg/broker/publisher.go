@@ -6,12 +6,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"google.golang.org/protobuf/proto"
 )
-
-
 
 // produce.Flush should be finished within this time
 var defaultFlushTimeout = time.Second * 3
@@ -19,8 +17,6 @@ var defaultFlushTimeout = time.Second * 3
 type Publisher struct {
 	producer *kafka.Producer
 }
-
-
 
 func NewPublisher(c *resolver.ConfigMap) *Publisher {
 
@@ -37,8 +33,8 @@ func NewPublisher(c *resolver.ConfigMap) *Publisher {
 	address := fmt.Sprintf("%s:%s", host, port)
 
 	config := &kafka.ConfigMap{
-		"bootstrap.servers": address,
-		"acks": 0, // 0 if no response is required, 1 if only leader response is required, -1 if all in-sync replicas' response is required
+		"bootstrap.servers":   address,
+		"acks":                0,    // 0 if no response is required, 1 if only leader response is required, -1 if all in-sync replicas' response is required
 		"go.delivery.reports": true, // Delivery reports (on delivery success/failure) will be sent on the Producer.Events() channel
 	}
 
@@ -51,12 +47,10 @@ func NewPublisher(c *resolver.ConfigMap) *Publisher {
 	return &Publisher{producer: producer}
 }
 
-
 // It should be called before program ends to free memory
 func (p *Publisher) Close() {
 	p.producer.Close()
 }
-
 
 // Check if connection to kafka is alive
 func (p *Publisher) Ping(ctx context.Context) error {
@@ -74,9 +68,6 @@ func (p *Publisher) Ping(ctx context.Context) error {
 	_, err := p.producer.GetMetadata(nil, true, int(remaining.Milliseconds()))
 	return err
 }
-
-
-
 
 func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 
@@ -113,8 +104,6 @@ func (p *Publisher) SendData(topic string, data *StockAggregate) error {
 
 	return nil
 }
-
-
 
 func (p *Publisher) SendDataBatch(topic string, batch []*StockAggregate) error {
 

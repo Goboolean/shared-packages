@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Goboolean/shared-packages/pkg/kafka"
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/kafka"
+	"github.com/Goboolean/shared/pkg/resolver"
 )
 
 var pub *kafka.Producer
@@ -22,7 +22,6 @@ func TeardownProducer() {
 		panic(err)
 	}
 }
-
 
 func TestProducer(t *testing.T) {
 	SetupProducer()

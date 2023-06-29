@@ -4,24 +4,18 @@ import (
 	"context"
 	"testing"
 
-	"github.com/Goboolean/shared-packages/pkg/mongo"
+	"github.com/Goboolean/shared/pkg/mongo"
 )
 
-
-
 var (
-	stockName = "asdf"
+	stockName  = "asdf"
 	stockBatch = []*mongo.StockAggregate{
 		{},
 		{},
 	}
 )
 
-
 var testStockName string = ""
-
-
-
 
 func TestInsertStockBatch(t *testing.T) {
 	tx, err := instance.NewTx(context.Background())
@@ -50,7 +44,6 @@ func isEqual(send, received []*mongo.StockAggregate) bool {
 	return true
 }
 
-
 func TestFetchAllStockBatch(t *testing.T) {
 
 	tx, err := instance.NewTx(context.Background())
@@ -58,7 +51,7 @@ func TestFetchAllStockBatch(t *testing.T) {
 		t.Errorf("failed to start transaction: %v", err)
 	}
 
-	result, err := queries.FetchAllStockBatch(tx, stockName);
+	result, err := queries.FetchAllStockBatch(tx, stockName)
 	if err != nil {
 		t.Errorf("FetchAllStockBatch() failed: %v", err)
 	}
@@ -90,7 +83,7 @@ func FetchAllStockBatchMassive(t *testing.T) {
 
 	received := make([]*mongo.StockAggregate, 0)
 
-	loop:
+loop:
 	for {
 		select {
 		case <-ctx.Done():
@@ -100,7 +93,7 @@ func FetchAllStockBatchMassive(t *testing.T) {
 			if stock == nil {
 				break loop
 			}
-			received = append(received, stock)			
+			received = append(received, stock)
 		}
 	}
 

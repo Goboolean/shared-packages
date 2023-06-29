@@ -4,8 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Goboolean/shared-packages/pkg/mongo"
-	"github.com/Goboolean/shared-packages/pkg/resolver"
+	"github.com/Goboolean/shared/pkg/mongo"
+	"github.com/Goboolean/shared/pkg/resolver"
 	"github.com/joho/godotenv"
 )
 
@@ -14,11 +14,9 @@ import (
 // 2. Test insertion without transaction
 // 3. Test insertion with transaction
 
-
-
 var (
 	instance *mongo.DB
-	queries *mongo.Queries
+	queries  *mongo.Queries
 )
 
 func SetupMongo() {
@@ -31,7 +29,6 @@ func SetupMongo() {
 	})
 	queries = mongo.New(instance)
 }
-
 
 func TeardownMongo() {
 	instance.Close()
@@ -53,7 +50,6 @@ func TestMain(m *testing.M) {
 
 	os.Exit(code)
 }
-
 
 func TestConstructor(t *testing.T) {
 	if err := instance.Ping(); err != nil {
