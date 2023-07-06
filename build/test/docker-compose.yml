@@ -1,0 +1,7 @@
+services:
+  server:
+    container_name: shared
+    build:
+      context: ../../
+      dockerfile: ./build/test/Dockerfile
+    command: ["go", "test", "./..."]
