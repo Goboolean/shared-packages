@@ -19,20 +19,3 @@ clean-kafka:
 
 sqlc-generate:
 	sqlc generate -f api/sql/sqlc.yml
-
-test-pkg:
-	docker compose -f ./
-
-test-app:
-	if docker-compose -f ./build/test/docker-compose.yml up --build ; then \
-		docker-compose -f ./build/test/docker-compose.yml down; \
-		cd ../; \
-		rm -r test; \
-		exit 1; \
-	else \
-		docker-compose -f ./build/test/docker-compose.yml down; \
-		cp -r ./* ../; \
-		cd ../; \
-		rm -r test; \
-		exit 0; \
-	fi
