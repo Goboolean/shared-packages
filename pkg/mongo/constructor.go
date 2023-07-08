@@ -41,8 +41,8 @@ func NewDB(c *resolver.ConfigMap) *DB {
 		panic(err)
 	}
 
-	mongoURI := fmt.Sprintf("mongodb://%s:%s@%s:%s/?maxPoolSize=20&w=majority",
-		user, password, host, port)
+	mongoURI := fmt.Sprintf("mongodb://%s:%s@%s:%s/?authSource=%s",
+	user, password, host, port, database)
 
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI(mongoURI).SetServerAPIOptions(serverAPI)
@@ -61,10 +61,7 @@ func NewDB(c *resolver.ConfigMap) *DB {
 
 func (db *DB) NewTx(ctx context.Context) (resolver.Transactioner, error) {
 	session, err := db.client.StartSession()
-	if err != nil {
-		return nil, err
-	}
-	return NewTransaction(session, ctx), nil
+	return NewTransaction(session, ctx), err
 }
 
 func (db *DB) Close() error {
