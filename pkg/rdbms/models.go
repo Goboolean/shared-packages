@@ -5,19 +5,28 @@
 package rdbms
 
 import (
+	"database/sql"
 	"time"
 )
 
 type StockMetum struct {
-	StockID     string
-	StockCode   string
-	FetchOrigin string
+	Hash        string
 	StockName   string
-	CreatedAt   time.Time
+	Symbol      string
+	Description sql.NullString
+	ProductType string
+	Exchange    string
+	Location    string
+}
+
+type StockPlatform struct {
+	Platform   string
+	Identifier string
+	StockHash  string
 }
 
 type StoreLog struct {
-	StockID  string
-	StoredAt time.Time
-	Status   string
+	StockHash string
+	StoredAt  time.Time
+	Status    string
 }
