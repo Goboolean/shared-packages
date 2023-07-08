@@ -1,19 +1,20 @@
 -- name: CreateAccessInfo :exec
-INSERT INTO store_log (stock_id, status) VALUES (stock_id, status);
+INSERT INTO store_log (stock_hash, status) VALUES (?, ?);
+
+-- name: InsertNewStockMeta :exec
+INSERT INTO stock_meta (hash, stock_name, symbol, description, product_type, exchange, location) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+-- name: InsertNewStockPlatformMeta :exec
+INSERT INTO stock_platform (platform, identifier, stock_hash) VALUES (?, ?, ?);
 
 -- name: CheckStockExist :one
-SELECT EXISTS(SELECT 1 FROM stock_meta WHERE stock_id = (?));
+SELECT EXISTS(SELECT 1 FROM stock_meta WHERE hash = (?));
 
--- name: GetStockList :many
-SELECT stock_id FROM stock_meta;
+-- name: GetStockMeta :one
+SELECT hash, stock_name, symbol, description, product_type, exchange, location FROM stock_meta WHERE hash = (?);
 
--- name: GetStockListByOrigin :many
-SELECT stock_id FROM stock_meta WHERE fetch_origin = (?);
+-- name: GetAllStockMetaList :many
+SELECT hash, stock_name, symbol, description, product_type, exchange, location FROM stock_meta;
 
--- name: GetStockListWithDetail :many
-SELECT stock_id, stock_code, fetch_origin, stock_name, created_at FROM stock_meta;
-
--- name: CreateStockMeta :exec
-INSERT INTO stock_meta (stock_id, stock_code, fetch_origin, stock_name)
-VALUES (stock_code || '&' || fetch_origin, stock_code, fetch_origin, stock_name);
-
+-- name: GetStockMetaWithPlatform :one
+SELECT hash, stock_name, symbol, description, product_type, exchange, location, platform, identifier FROM stock_meta JOIN stock_platform ON stock_meta.hash = stock_platform.stock_hash WHERE stock_hash = (?);

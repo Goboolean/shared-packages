@@ -7,98 +7,40 @@ package rdbms
 
 import (
 	"context"
+	"database/sql"
 )
 
 const checkStockExist = `-- name: CheckStockExist :one
-SELECT EXISTS(SELECT 1 FROM stock_meta WHERE stock_id = (?))
+SELECT EXISTS(SELECT 1 FROM stock_meta WHERE hash = (?))
 `
 
-func (q *Queries) CheckStockExist(ctx context.Context, stockID string) (bool, error) {
-	row := q.db.QueryRowContext(ctx, checkStockExist, stockID)
+func (q *Queries) CheckStockExist(ctx context.Context, hash string) (bool, error) {
+	row := q.db.QueryRowContext(ctx, checkStockExist, hash)
 	var exists bool
 	err := row.Scan(&exists)
 	return exists, err
 }
 
 const createAccessInfo = `-- name: CreateAccessInfo :exec
-INSERT INTO store_log (stock_id, status) VALUES (stock_id, status)
+INSERT INTO store_log (stock_hash, status) VALUES (?, ?)
 `
 
-func (q *Queries) CreateAccessInfo(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, createAccessInfo)
+type CreateAccessInfoParams struct {
+	StockHash string
+	Status    string
+}
+
+func (q *Queries) CreateAccessInfo(ctx context.Context, arg CreateAccessInfoParams) error {
+	_, err := q.db.ExecContext(ctx, createAccessInfo, arg.StockHash, arg.Status)
 	return err
 }
 
-const createStockMeta = `-- name: CreateStockMeta :exec
-INSERT INTO stock_meta (stock_id, stock_code, fetch_origin, stock_name)
-VALUES (stock_code || '&' || fetch_origin, stock_code, fetch_origin, stock_name)
+const getAllStockMetaList = `-- name: GetAllStockMetaList :many
+SELECT hash, stock_name, symbol, description, product_type, exchange, location FROM stock_meta
 `
 
-func (q *Queries) CreateStockMeta(ctx context.Context) error {
-	_, err := q.db.ExecContext(ctx, createStockMeta)
-	return err
-}
-
-const getStockList = `-- name: GetStockList :many
-SELECT stock_id FROM stock_meta
-`
-
-func (q *Queries) GetStockList(ctx context.Context) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, getStockList)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []string
-	for rows.Next() {
-		var stock_id string
-		if err := rows.Scan(&stock_id); err != nil {
-			return nil, err
-		}
-		items = append(items, stock_id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getStockListByOrigin = `-- name: GetStockListByOrigin :many
-SELECT stock_id FROM stock_meta WHERE fetch_origin = (?)
-`
-
-func (q *Queries) GetStockListByOrigin(ctx context.Context, fetchOrigin string) ([]string, error) {
-	rows, err := q.db.QueryContext(ctx, getStockListByOrigin, fetchOrigin)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []string
-	for rows.Next() {
-		var stock_id string
-		if err := rows.Scan(&stock_id); err != nil {
-			return nil, err
-		}
-		items = append(items, stock_id)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getStockListWithDetail = `-- name: GetStockListWithDetail :many
-SELECT stock_id, stock_code, fetch_origin, stock_name, created_at FROM stock_meta
-`
-
-func (q *Queries) GetStockListWithDetail(ctx context.Context) ([]StockMetum, error) {
-	rows, err := q.db.QueryContext(ctx, getStockListWithDetail)
+func (q *Queries) GetAllStockMetaList(ctx context.Context) ([]StockMetum, error) {
+	rows, err := q.db.QueryContext(ctx, getAllStockMetaList)
 	if err != nil {
 		return nil, err
 	}
@@ -107,11 +49,13 @@ func (q *Queries) GetStockListWithDetail(ctx context.Context) ([]StockMetum, err
 	for rows.Next() {
 		var i StockMetum
 		if err := rows.Scan(
-			&i.StockID,
-			&i.StockCode,
-			&i.FetchOrigin,
+			&i.Hash,
 			&i.StockName,
-			&i.CreatedAt,
+			&i.Symbol,
+			&i.Description,
+			&i.ProductType,
+			&i.Exchange,
+			&i.Location,
 		); err != nil {
 			return nil, err
 		}
@@ -124,4 +68,98 @@ func (q *Queries) GetStockListWithDetail(ctx context.Context) ([]StockMetum, err
 		return nil, err
 	}
 	return items, nil
+}
+
+const getStockMeta = `-- name: GetStockMeta :one
+SELECT hash, stock_name, symbol, description, product_type, exchange, location FROM stock_meta WHERE hash = (?)
+`
+
+func (q *Queries) GetStockMeta(ctx context.Context, hash string) (StockMetum, error) {
+	row := q.db.QueryRowContext(ctx, getStockMeta, hash)
+	var i StockMetum
+	err := row.Scan(
+		&i.Hash,
+		&i.StockName,
+		&i.Symbol,
+		&i.Description,
+		&i.ProductType,
+		&i.Exchange,
+		&i.Location,
+	)
+	return i, err
+}
+
+const getStockMetaWithPlatform = `-- name: GetStockMetaWithPlatform :one
+SELECT hash, stock_name, symbol, description, product_type, exchange, location, platform, identifier FROM stock_meta JOIN stock_platform ON stock_meta.hash = stock_platform.stock_hash WHERE stock_hash = (?)
+`
+
+type GetStockMetaWithPlatformRow struct {
+	Hash        string
+	StockName   string
+	Symbol      string
+	Description sql.NullString
+	ProductType string
+	Exchange    string
+	Location    string
+	Platform    string
+	Identifier  string
+}
+
+func (q *Queries) GetStockMetaWithPlatform(ctx context.Context, stockHash string) (GetStockMetaWithPlatformRow, error) {
+	row := q.db.QueryRowContext(ctx, getStockMetaWithPlatform, stockHash)
+	var i GetStockMetaWithPlatformRow
+	err := row.Scan(
+		&i.Hash,
+		&i.StockName,
+		&i.Symbol,
+		&i.Description,
+		&i.ProductType,
+		&i.Exchange,
+		&i.Location,
+		&i.Platform,
+		&i.Identifier,
+	)
+	return i, err
+}
+
+const insertNewStockMeta = `-- name: InsertNewStockMeta :exec
+INSERT INTO stock_meta (hash, stock_name, symbol, description, product_type, exchange, location) VALUES (?, ?, ?, ?, ?, ?, ?)
+`
+
+type InsertNewStockMetaParams struct {
+	Hash        string
+	StockName   string
+	Symbol      string
+	Description sql.NullString
+	ProductType string
+	Exchange    string
+	Location    string
+}
+
+func (q *Queries) InsertNewStockMeta(ctx context.Context, arg InsertNewStockMetaParams) error {
+	_, err := q.db.ExecContext(ctx, insertNewStockMeta,
+		arg.Hash,
+		arg.StockName,
+		arg.Symbol,
+		arg.Description,
+		arg.ProductType,
+		arg.Exchange,
+		arg.Location,
+	)
+	return err
+}
+
+const insertNewStockPlatformMeta = `-- name: InsertNewStockPlatformMeta :exec
+INSERT INTO stock_platform (platform, identifier, stock_hash) VALUES (?, ?, ?)
+`
+
+type InsertNewStockPlatformMetaParams struct {
+	Platform   string
+	Identifier string
+	StockHash  string
+}
+
+func (q *Queries) InsertNewStockPlatformMeta(ctx context.Context, arg InsertNewStockPlatformMetaParams) error {
+	_, err := q.db.ExecContext(ctx, insertNewStockPlatformMeta, arg.Platform, arg.Identifier, arg.StockHash)
+	return err
 }
